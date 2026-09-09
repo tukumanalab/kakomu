@@ -7,6 +7,14 @@
  *
  * ひらがなモードで変わるのは 文言 / 書体 / 文字サイズ / 行間 / 単位 の 5 つだけ。
  * 画面の構造・ボタンの位置・機能は変わらない。
+ *
+ * ---------------------------------------------------------------------------
+ * いまは漢字モードだけを使う。
+ * まず機能を作りきることを優先するため、切り替えを UI から外している。
+ * ひらがなの文言（ja-hira.json）と仕組みは消さずに残してあるので、
+ * 戻すときは READING_SWITCH_ENABLED を true にして、
+ * ツールバーに切り替えを戻すだけでよい。
+ * ---------------------------------------------------------------------------
  */
 
 import { createSignal } from 'solid-js';
@@ -24,7 +32,11 @@ const DICTS: Record<ReadingLevel, Dict> = {
 
 const STORAGE_KEY = 'kakomu.reading';
 
+/** 切り替えを使うかどうか。当面は漢字だけ */
+export const READING_SWITCH_ENABLED = false;
+
 function load(): ReadingLevel {
+  if (!READING_SWITCH_ENABLED) return 'kanji';
   try {
     const v = localStorage.getItem(STORAGE_KEY);
     if (v === 'hira' || v === 'kanji') return v;
@@ -39,6 +51,7 @@ const [level, setLevelSignal] = createSignal<ReadingLevel>(load());
 export { level as readingLevel };
 
 export function setReadingLevel(next: ReadingLevel): void {
+  if (!READING_SWITCH_ENABLED) return;
   setLevelSignal(next);
   document.documentElement.dataset.read = next;
   try {
@@ -51,6 +64,15 @@ export function setReadingLevel(next: ReadingLevel): void {
 /** 起動時に一度呼ぶ */
 export function initI18n(): void {
   document.documentElement.dataset.read = level();
+  if (!READING_SWITCH_ENABLED) {
+    // 前に「ひらがな」で使っていた人が、切り替えを外したあとも
+    // ひらがなのまま取り残されないよう、保存された選択を消しておく
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // 消せなくても漢字で動く
+    }
+  }
 }
 
 /**

@@ -1,6 +1,5 @@
 import { For, Show } from 'solid-js';
-import { readingLevel, setReadingLevel, t } from '~/app/i18n';
-import type { ReadingLevel } from '~/app/i18n';
+import { t } from '~/app/i18n';
 import { canRedo, canUndo, doc, redo, undo } from '~/document/store';
 import { fitCanvas, zoomByStep, zoomToActualSize } from '~/canvas/viewport';
 
@@ -22,11 +21,6 @@ export function TopBar(props: {
   hasArtwork: boolean;
   canRemoveBackground: boolean;
 }) {
-  const levels: { id: ReadingLevel; key: string }[] = [
-    { id: 'kanji', key: 'read.kanji' },
-    { id: 'hira', key: 'read.hira' },
-  ];
-
   return (
     <div class="topbar">
       <span class="brand">
@@ -81,23 +75,6 @@ export function TopBar(props: {
           {t('action.export')}
         </button>
       </Show>
-
-      <div class="reader">
-        <span class="reader-label">{t('read.label')}</span>
-        <div class="seg" role="group" aria-label={t('read.label')}>
-          <For each={levels}>
-            {(l) => (
-              <button
-                type="button"
-                aria-pressed={readingLevel() === l.id}
-                onClick={() => setReadingLevel(l.id)}
-              >
-                {t(l.key)}
-              </button>
-            )}
-          </For>
-        </div>
-      </div>
     </div>
   );
 }
