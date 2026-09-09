@@ -252,9 +252,9 @@ function ChecksPanel() {
 
 // ------------------------------------------------------------------ 背景を消す
 
+/** 元の絵が何かで選ぶ。速さや精度では選ばせない */
 const MODEL_CHOICES: { id: MattingModel; key: string }[] = [
-  { id: 'u2netp', key: 'matting.fast' },
-  { id: 'isnet-general-use', key: 'matting.nice' },
+  { id: 'isnet-general-use', key: 'matting.photo' },
   { id: 'isnet-anime', key: 'matting.illust' },
 ];
 

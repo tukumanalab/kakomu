@@ -29,6 +29,38 @@ describe('文言（漢字）', () => {
   });
 });
 
+describe('漢字モードにひらがなだけの言い回しが残っていない', () => {
+  /**
+   * 漢字モードは小学校高学年くらいから上が対象なので、普通の日本語で書く。
+   * ひらがなモード用に書いた「もどす」「かさね」のような言い回しが
+   * そのまま残っていると、どちらのモードでも中途半端になる（SPEC 3.4）。
+   *
+   * ひらがなが 4 文字以上つづく語を機械的に拾う。カタカナと、
+   * 漢字が混ざった語は対象外。
+   */
+  const KANA_ONLY = /^[ぁ-んー]{4,}$/;
+
+  /**
+    * もともとひらがなで書くのが自然な語。漢字にするとかえって読みにくい。
+    * ここに挙げたものは見逃す。
+    */
+  const ALLOWED = ['それぞれ', 'ください', 'とりあえず', 'かならず'];
+
+  it('4 文字以上のひらがなだけの語がない', () => {
+    const offenders: string[] = [];
+    for (const [key, value] of Object.entries(kanji)) {
+      // 切り替えのラベル自体は、ひらがなであることに意味がある
+      if (key.startsWith('read.')) continue;
+      for (const word of value.split(/[、。\s（）「」]/)) {
+        if (KANA_ONLY.test(word) && !ALLOWED.includes(word)) {
+          offenders.push(`${key}: 「${word}」 in "${value}"`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+});
+
 describe('文言（ひらがな・当面は未使用）', () => {
   it('漢字側に無いキーが残っていない', () => {
     // 漢字側で消したキーがひらがなに残っていると、戻すときに混乱する

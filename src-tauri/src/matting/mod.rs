@@ -32,21 +32,15 @@ pub struct Model {
     /// 前処理の正規化
     pub mean: [f32; 3],
     pub std: [f32; 3],
+    /// UI の選択肢に出すか。false のものはテストからだけ使う
+    pub selectable: bool,
 }
 
-/// 既定は u2netp。4.4MB なので初回でも数秒で落ちてきて、
-/// 「その日のうちに終わる」を壊さない（SPEC 1.2）。
-/// もっときれいにしたい人は、あとから重いモデルを選べる。
+/// 利用者に見せる選択肢は「写真」と「イラスト」の 2 つだけ。
+/// 速さや精度ではなく、**手元にある絵が何か**で選ばせる。
+/// 速い／きれい は利用者にトレードオフの判断を求めてしまうが、
+/// 写真かイラストかは見れば分かる（SPEC 3.4 の「行為の言葉で書く」）。
 pub const MODELS: &[Model] = &[
-    Model {
-        id: "u2netp",
-        file: "u2netp.onnx",
-        url: "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx",
-        bytes: 4_574_861,
-        input: 320,
-        mean: [0.485, 0.456, 0.406],
-        std: [0.229, 0.224, 0.225],
-    },
     Model {
         id: "isnet-general-use",
         file: "isnet-general-use.onnx",
@@ -55,6 +49,7 @@ pub const MODELS: &[Model] = &[
         input: 1024,
         mean: [0.5, 0.5, 0.5],
         std: [1.0, 1.0, 1.0],
+        selectable: true,
     },
     // 子どもが描いた絵やキャラクターのイラストはこちらのほうが安定する
     Model {
@@ -65,6 +60,18 @@ pub const MODELS: &[Model] = &[
         input: 1024,
         mean: [0.5, 0.5, 0.5],
         std: [1.0, 1.0, 1.0],
+        selectable: true,
+    },
+    // 4.4MB と軽いので、統合テストではこれを使う。UI には出さない
+    Model {
+        id: "u2netp",
+        file: "u2netp.onnx",
+        url: "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx",
+        bytes: 4_574_861,
+        input: 320,
+        mean: [0.485, 0.456, 0.406],
+        std: [0.229, 0.224, 0.225],
+        selectable: false,
     },
 ];
 
@@ -92,6 +99,7 @@ pub fn list_models(app: AppHandle) -> Result<Vec<ModelInfo>> {
     let dir = models_dir(&app)?;
     Ok(MODELS
         .iter()
+        .filter(|m| m.selectable)
         .map(|m| ModelInfo {
             id: m.id.to_string(),
             bytes: m.bytes,
@@ -210,7 +218,7 @@ pub struct MattingOptions {
 impl Default for MattingOptions {
     fn default() -> Self {
         Self {
-            model: "u2netp".to_string(),
+            model: "isnet-general-use".to_string(),
             edge_tighten: 0.35,
         }
     }
@@ -405,10 +413,16 @@ mod tests {
     }
 
     #[test]
-    fn 既定のモデルは軽いものにする() {
-        let m = model_by_id("u2netp").expect("u2netp があること");
-        // 初回ダウンロードを待たせないため、10MB 未満に保つ
-        assert!(m.bytes < 10 * 1024 * 1024);
+    fn 選択肢は写真とイラストの二つだけ() {
+        let ids: Vec<&str> = MODELS
+            .iter()
+            .filter(|m| m.selectable)
+            .map(|m| m.id)
+            .collect();
+        assert_eq!(ids, vec!["isnet-general-use", "isnet-anime"]);
+        // テスト用の軽いモデルは、選択肢には出さない
+        let light = model_by_id("u2netp").expect("テスト用に残してあること");
+        assert!(!light.selectable);
     }
 
     /// 実際にモデルを落として推論まで通す。

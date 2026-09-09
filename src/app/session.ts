@@ -7,10 +7,10 @@ import { createSignal } from 'solid-js';
 import { listModels } from '~/ipc';
 import type { MattingProgress, ModelInfo } from '~/ipc';
 
-export type MattingModel = 'u2netp' | 'isnet-general-use' | 'isnet-anime';
+export type MattingModel = 'isnet-general-use' | 'isnet-anime';
 
-/** 既定は u2netp。4.4MB なので初回でも数秒で終わり、その日のうちに作りおわれる */
-const [mattingModel, setMattingModel] = createSignal<MattingModel>('u2netp');
+/** 既定は写真向け。手元にあるものが何かで選ばせる（速さや精度では選ばせない） */
+const [mattingModel, setMattingModel] = createSignal<MattingModel>('isnet-general-use');
 const [edgeTighten, setEdgeTighten] = createSignal(0.35);
 
 /** 消す前の絵と見くらべているあいだ true */
