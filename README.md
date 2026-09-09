@@ -18,6 +18,78 @@
 | レーザー加工機 | xTool P3（XCS） |
 | UV プリンター | Roland VersaSTUDIO BD-8（VersaWorks 7、白インクあり） |
 
+## 入れかた
+
+> **配布はまだ準備中です。** タグを打つと 3 OS 分のインストーラが
+> [Releases](https://github.com/tukumanalab/kakomu/releases) に出るようにしてあります。
+> それまでは下の「ソースから動かす」を使ってください。
+
+コード署名をまだ入れていないので、どの OS でも初回に警告が出ます（SPEC 10.3）。
+
+### Windows
+
+`.msi` を実行します。「WindowsによってPCが保護されました」と出たら、**「詳細情報」→「実行」**。
+
+### macOS
+
+`.dmg` を開いて Applications に入れます。初回は「開発元を確認できないため開けません」と出るので、
+アプリを **右クリック →「開く」** で起動してください。2 回目以降はそのまま開けます。
+
+### Linux（一般）
+
+```sh
+chmod +x kakomu_*.AppImage
+./kakomu_*.AppImage
+```
+
+### omarchy（Arch Linux + Hyprland）
+
+kakomu は Wayland / Hyprland を主要な対応対象にしています。Arch では
+**依存パッケージを先に入れてください**。
+
+```sh
+sudo pacman -S --needed   webkit2gtk-4.1 gtk3 libappindicator-gtk3 librsvg   xdg-desktop-portal-hyprland xdg-desktop-portal-gtk fuse2
+```
+
+| パッケージ | なぜ要るか |
+|---|---|
+| `webkit2gtk-4.1` `gtk3` `librsvg` | 画面の描画。これが無いと起動しません |
+| `xdg-desktop-portal-hyprland` **と** `xdg-desktop-portal-gtk` | ファイルを開くダイアログ。Hyprland では**両方**必要です。片方だけだとダイアログが出ません |
+| `fuse2` | AppImage の実行に要ります |
+
+そのうえで実行します。
+
+```sh
+chmod +x kakomu_*.AppImage
+./kakomu_*.AppImage
+```
+
+**画面が真っ白になる／描画が崩れるとき**は、WebKitGTK の DMABUF レンダラを切ってください。
+Nvidia ドライバや一部のコンポジタで起きます。
+
+```sh
+WEBKIT_DISABLE_DMABUF_RENDERER=1 ./kakomu_*.AppImage
+```
+
+毎回付けるのが面倒なら、`~/.config/environment.d/kakomu.conf` に書いておけます。
+
+```
+WEBKIT_DISABLE_DMABUF_RENDERER=1
+```
+
+#### ソースから入れる（Arch）
+
+```sh
+sudo pacman -S --needed base-devel rust nodejs pnpm   webkit2gtk-4.1 gtk3 libappindicator-gtk3 librsvg   xdg-desktop-portal-hyprland xdg-desktop-portal-gtk
+
+git clone https://github.com/tukumanalab/kakomu.git
+cd kakomu
+pnpm install
+pnpm tauri build          # src-tauri/target/release/bundle/ に出ます
+```
+
+AUR パッケージ（`kakomu-bin`）は M6 で用意する予定です。
+
 ## 動かす
 
 ```sh

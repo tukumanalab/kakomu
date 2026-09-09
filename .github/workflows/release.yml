@@ -1,0 +1,91 @@
+name: Release
+
+# v0.1.0 のようなタグを push すると、3 OS 分のインストーラを作って
+# GitHub の Releases に置く。手動でも走らせられる。
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'タグ名（例: v0.1.0）'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: macOS (Intel + Apple Silicon)
+            os: macos-latest
+            args: '--target universal-apple-darwin'
+            rust-targets: 'aarch64-apple-darwin,x86_64-apple-darwin'
+          - label: Windows
+            os: windows-latest
+            args: ''
+            rust-targets: ''
+          - label: Linux
+            # AppImage の互換性を上げるため、いちばん古い glibc に合わせる
+            os: ubuntu-22.04
+            args: ''
+            rust-targets: ''
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-targets }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Linux の依存関係
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev \
+            patchelf libgtk-3-dev
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag }}
+          releaseName: kakomu ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag }}
+          releaseBody: |
+            ## 入れかた
+
+            **macOS**: `.dmg` を開いて Applications に入れます。初回は「開発元を確認できないため開けません」と出るので、
+            アプリを **右クリック →「開く」** で起動してください（2 回目以降はそのまま開けます）。
+
+            **Windows**: `.msi` を実行します。「WindowsによってPCが保護されました」と出たら
+            「詳細情報」→「実行」を選んでください。
+
+            **Linux**: `.AppImage` に実行権限を付けて起動します（`chmod +x kakomu_*.AppImage`）。
+
+            どちらの警告も、コード署名をまだ入れていないために出ます（SPEC 10.3）。
+
+            ## 背景を消す機能について
+
+            初めて使うときだけ、切り抜き用のモデルを 1 回ダウンロードします（約 170MB）。
+            2 回目以降は不要です。推論はすべて手元で動き、**画像を外部に送信しません**。
+          releaseDraft: true
+          prerelease: true
+          args: ${{ matrix.args }}
