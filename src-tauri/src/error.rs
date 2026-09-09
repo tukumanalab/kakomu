@@ -30,6 +30,9 @@ pub enum Error {
 
     #[error("知らないモデルです: {0}")]
     UnknownModel(String),
+
+    #[error("書き出せませんでした: {0}")]
+    Export(String),
 }
 
 /// フロント側では文字列として受け取る

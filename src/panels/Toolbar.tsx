@@ -17,6 +17,7 @@ const TOOLS: { id: ToolId; glyph: string; ready: boolean }[] = [
 export function TopBar(props: {
   onImport: () => void;
   onRemoveBackground: () => void;
+  onExport: () => void;
   busy: boolean;
   hasArtwork: boolean;
   canRemoveBackground: boolean;
@@ -71,7 +72,7 @@ export function TopBar(props: {
       <span class="spacer" />
 
       <Show when={props.hasArtwork}>
-        <button class="tbtn" disabled title="M1 でつくります">
+        <button class="tbtn" onClick={props.onExport} disabled={props.busy}>
           {t('action.export')}
         </button>
       </Show>

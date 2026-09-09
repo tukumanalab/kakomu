@@ -87,5 +87,12 @@
   "matting.needImage": "先に絵を入れてください",
   "cmd.removeBg": "背景を消す",
   "err.mattingFailed": "背景を消せませんでした。もう一度試すか、別の絵で試してください",
-  "matting.photo": "写真"
+  "matting.photo": "写真",
+  "export.running": "書き出しています",
+  "export.done": "書き出しました",
+  "export.toLaser": "切るデータ → レーザー加工機（xTool P3）へ",
+  "export.toPrinter": "印刷するデータ → UV プリンター（BD-8）へ",
+  "export.boardOutlineNote": "切る線をまだ作っていないので、板の外形を仮に書き出しています",
+  "export.close": "閉じる",
+  "err.exportFailed": "書き出せませんでした。フォルダを確かめて、もう一度試してください"
 }

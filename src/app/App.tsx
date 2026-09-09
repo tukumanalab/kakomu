@@ -24,6 +24,8 @@ import type { Asset, ImageNode } from '~/document/types';
 import { ASSUMED_DPI, pxToMm } from '~/document/types';
 import { importImage, pickImageFile, removeBackground } from '~/ipc';
 import type { MattingProgress } from '~/ipc';
+import { exportBoth, pickExportFolder } from '~/export';
+import type { ExportResult } from '~/export';
 import {
   edgeTighten,
   mattingModel,
@@ -38,6 +40,7 @@ export default function App() {
   const [tool, setTool] = createSignal<ToolId>('select');
   const [busy, setBusy] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
+  const [exported, setExported] = createSignal<ExportResult | null>(null);
 
   const imageNodes = createMemo<ImageNode[]>(() =>
     doc()
@@ -168,6 +171,21 @@ export default function App() {
     }
   }
 
+  /** 切るデータと印刷するデータを、まとめて 1 回で書き出す */
+  async function onExport() {
+    setError(null);
+    try {
+      const folder = await pickExportFolder();
+      if (!folder) return;
+      setBusy(true);
+      setExported(await exportBoth(doc(), folder));
+    } catch (e) {
+      setError(`${t('err.exportFailed')}（${message(e)}）`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   /** 選んでいるものを優先し、無ければ絵が 1 枚だけならそれを使う */
   function targetImage(): ImageNode | null {
     const id = selection()[0];
@@ -184,6 +202,7 @@ export default function App() {
       <TopBar
         onImport={() => void onImport()}
         onRemoveBackground={() => void onRemoveBackground()}
+        onExport={() => void onExport()}
         busy={busy()}
         hasArtwork={hasArtwork()}
         canRemoveBackground={targetImage() !== null}
@@ -194,6 +213,10 @@ export default function App() {
       <StatusBar />
 
       <Show when={mattingProgress()}>{(p) => <ProgressOverlay progress={p()} />}</Show>
+
+      <Show when={exported()}>
+        {(r) => <ExportDone result={r()} onClose={() => setExported(null)} />}
+      </Show>
 
       <Show when={error()}>
         {(msg) => (
@@ -252,6 +275,44 @@ function ProgressOverlay(props: { progress: MattingProgress }) {
             {(props.progress as { totalMb: number }).totalMb.toFixed(1)} MB
           </p>
         </Show>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 書き出したあと、どちらをどの機械に持っていくかを出す（SPEC 8.4）。
+ * ファイルが 2 つ出てくること自体が、初めての人には分かりにくい。
+ */
+function ExportDone(props: { result: ExportResult; onClose: () => void }) {
+  return (
+    <div class="overlay" onClick={props.onClose}>
+      <div class="overlay-box wide" onClick={(e) => e.stopPropagation()}>
+        <p class="overlay-label">{t('export.done')}</p>
+
+        <div class="handoff">
+          <div class="handoff-row cut">
+            <span class="file">{props.result.svgName}</span>
+            <span class="to">{t('export.toLaser')}</span>
+          </div>
+          <div class="handoff-row print">
+            <span class="file">{props.result.pdfName}</span>
+            <span class="to">{t('export.toPrinter')}</span>
+          </div>
+        </div>
+
+        <p class="overlay-sub folder">{props.result.folder}</p>
+
+        <Show when={props.result.usedBoardOutline}>
+          <div class="issue warn" style={{ 'margin-top': '14px', 'text-align': 'left' }}>
+            <span class="mark">!</span>
+            <span>{t('export.boardOutlineNote')}</span>
+          </div>
+        </Show>
+
+        <button class="tbtn" style={{ 'margin-top': '16px' }} onClick={props.onClose}>
+          {t('export.close')}
+        </button>
       </div>
     </div>
   );

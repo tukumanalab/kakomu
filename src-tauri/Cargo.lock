@@ -1803,6 +1803,7 @@ dependencies = [
 name = "kakomu"
 version = "0.1.0"
 dependencies = [
+ "flate2",
  "futures-util",
  "image",
  "ort",
