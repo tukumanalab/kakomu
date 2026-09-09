@@ -1,5 +1,6 @@
 mod commands;
 mod error;
+mod matting;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -8,6 +9,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::image::import_image,
             commands::image::clear_workspace,
+            matting::list_models,
+            matting::remove_background,
         ])
         .run(tauri::generate_context!())
         .expect("kakomu の起動に失敗しました");

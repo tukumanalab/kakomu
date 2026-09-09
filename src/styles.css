@@ -325,9 +325,10 @@ button {
 
 /* つぎにやることの案内 */
 .next-hint {
-  position: absolute;
+  position: fixed;
   left: 50%;
-  bottom: 16px;
+  bottom: 38px;
+  z-index: 15;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
@@ -544,4 +545,75 @@ button {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* ------------------------------------------------------------------ 進捗 */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--sunken) 62%, transparent);
+  backdrop-filter: blur(2px);
+}
+.overlay-box {
+  min-width: 320px;
+  max-width: 420px;
+  padding: 22px 26px 24px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  text-align: center;
+}
+.overlay-label {
+  margin: 0 0 14px;
+  font-size: calc(var(--fs) + 1px);
+  font-weight: 700;
+}
+.overlay-sub {
+  margin: 10px 0 0;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.bar .fill {
+  height: 100%;
+  background: var(--cut);
+  border-radius: 4px;
+  transition: width 0.15s linear;
+}
+/* 残り時間が読めない処理は、進み具合を偽らずに「動いている」ことだけ見せる */
+.bar .fill.indeterminate {
+  width: 34%;
+  animation: slide 1.15s ease-in-out infinite;
+}
+@keyframes slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+.toast {
+  position: fixed;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  max-width: 520px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
 }

@@ -5,7 +5,8 @@
 
 import { For, Show, createMemo, createSignal, onCleanup, onMount } from 'solid-js';
 import type { ImageNode, Layer, Node, Point } from '~/document/types';
-import { doc, findNode, isSelected, run, selectOnly, selection } from '~/document/store';
+import { displayAssetId, doc, findNode, isSelected, run, selectOnly, selection } from '~/document/store';
+import { compareOriginal } from '~/app/session';
 import { setImageBox, setTransform } from '~/document/commands';
 import * as M from '~/geometry/matrix';
 import { fitCanvas, panBy, screenToMm, setSize, toMm, viewBox, zoomAt } from './viewport';
@@ -329,7 +330,10 @@ function NodeView(props: { node: Node }) {
       <Show when={props.node.type === 'image'}>
         {(() => {
           const n = props.node as ImageNode;
-          const asset = () => d().assets[n.assetId];
+          const asset = () => {
+            const id = displayAssetId(n, compareOriginal());
+            return id ? d().assets[id] : undefined;
+          };
           return (
             <Show when={asset()}>
               {(a) => (

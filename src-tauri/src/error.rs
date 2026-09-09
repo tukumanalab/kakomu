@@ -21,6 +21,15 @@ pub enum Error {
 
     #[error("保存先を決められませんでした: {0}")]
     Path(#[from] tauri::Error),
+
+    #[error("モデルをダウンロードできませんでした: {0}")]
+    Download(String),
+
+    #[error("背景を消せませんでした: {0}")]
+    Inference(String),
+
+    #[error("知らないモデルです: {0}")]
+    UnknownModel(String),
 }
 
 /// フロント側では文字列として受け取る

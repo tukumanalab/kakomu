@@ -6,7 +6,7 @@
  */
 
 import { createSignal, createMemo } from 'solid-js';
-import type { Asset, Doc, Layer, Node, NodeId, ProductKind } from './types';
+import type { Asset, AssetId, Doc, Layer, Node, NodeId, ProductKind } from './types';
 import { DEFAULT_CUTLINE_PARAMS } from './types';
 
 export interface Command {
@@ -150,6 +150,16 @@ export function allNodes(d: Doc): Node[] {
 
 export function assetOf(d: Doc, node: Node): Asset | undefined {
   return node.type === 'image' ? d.assets[node.assetId] : undefined;
+}
+
+/**
+ * 画面に出すアセット。背景を消してあればその結果を、
+ * 見くらべ中や未処理なら元画像を返す。元画像は必ず残っている。
+ */
+export function displayAssetId(node: Node, showOriginal = false): AssetId | null {
+  if (node.type !== 'image') return null;
+  if (!showOriginal && node.matting) return node.matting.resultAssetId;
+  return node.assetId;
 }
 
 // ---------------------------------------------------------------- 変更ヘルパ

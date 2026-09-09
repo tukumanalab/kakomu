@@ -1,21 +1,17 @@
 {
   "app.name": "kakomu",
-
   "read.label": "よみかた",
   "read.kanji": "かんじ",
   "read.hira": "ひらがな",
-
   "menu.file": "ファイル",
   "menu.open": "ひらく",
   "menu.save": "ほぞん",
   "menu.finish": "おわる",
-
   "tool.select": "えらぶ",
   "tool.node": "てん",
   "tool.path": "せん",
   "tool.hole": "あな",
   "tool.stand": "たてる ぶひん",
-
   "action.importImage": "えを いれる",
   "action.removeBg": "うしろを けす",
   "action.makeCutline": "かこむ",
@@ -27,24 +23,19 @@
   "action.zoomFit": "ぜんぶ みる",
   "action.zoomActual": "ほんとうの おおきさ",
   "action.delete": "けす",
-
   "empty.title": "えを いれる ところから はじめます",
   "empty.drop": "ここに えを ドラッグ するか ボタンを おしてね",
   "empty.button": "えを いれる",
-
   "next.removeBg": "つぎは うしろを けします",
   "next.cutline": "つぎは まわりを かこみます",
   "next.export": "つぎは ほぞん します",
-
   "panel.layers": "かさね",
   "panel.properties": "せってい",
   "panel.checks": "しらべた けっか",
-
   "layer.artwork": "え",
   "layer.cutline": "きる せん",
   "layer.parts": "ぶひん",
   "layer.guide": "したじき",
-
   "prop.position": "いち",
   "prop.size": "おおきさ",
   "prop.rotation": "かたむき",
@@ -55,28 +46,22 @@
   "prop.angle": "かくど",
   "prop.keepRatio": "たてよこの かたちを かえない",
   "prop.nothingSelected": "まだ なにも えらんで いません",
-
   "canvas.page": "しあがり",
   "canvas.bleed": "ふちの よゆう",
   "canvas.size": "いたの おおきさ",
-
   "product.keychain": "アクリル キーホルダー",
   "product.stand": "たてる アクリル",
   "product.custom": "じゆう",
   "product.thickness": "アクリルの あつさ",
-
   "unit.mm": "ミリ",
   "unit.deg": "ど",
   "unit.dpi": "dpi",
-
   "status.zoom": "ばいりつ",
   "status.dpi": "えの こまかさ",
   "status.warnings": "ちゅうい",
   "status.ready": "じゅんび できました",
-
   "warn.lowDpi": "えが あらく なります。もっと おおきい えを つかってね",
   "warn.lowDpiShort": "えが あらく なります",
-
   "cmd.import": "えを いれる",
   "cmd.move": "うごかす",
   "cmd.resize": "おおきさを かえる",
@@ -84,10 +69,24 @@
   "cmd.delete": "けす",
   "cmd.reorder": "ならびを かえる",
   "cmd.toggleVisible": "みえかたを かえる",
-
   "err.importFailed": "この えは ひらけません でした。ほかの ファイルで ためして みてね",
   "err.tooLarge": "えが おおきすぎます。ちいさく してから いれてね",
-
   "hint.dragToMove": "ドラッグ すると うごきます",
-  "hint.shiftKeepsRatio": "Shift を おしながら だと かたちが かわりません"
+  "hint.shiftKeepsRatio": "Shift を おしながら だと かたちが かわりません",
+  "matting.title": "うしろを けす",
+  "matting.model": "きれいさ",
+  "matting.fast": "はやい",
+  "matting.nice": "きれい",
+  "matting.illust": "えを かいた とき",
+  "matting.modelNote": "「きれい」と「えを かいた とき」は はじめて つかう ときだけ ダウンロード します",
+  "matting.edge": "ふちを きゅっと する",
+  "matting.compare": "けす まえと くらべる",
+  "matting.download": "じゅんびの ファイルを ダウンロード して います",
+  "matting.load": "じゅんび して います",
+  "matting.infer": "いま うしろを けして います",
+  "matting.compose": "えを つくって います",
+  "matting.check": "うまく けせて いるか みてね。だめな ときは「きれいさ」を かえて もう いちど できます",
+  "matting.needImage": "さきに えを いれてね",
+  "cmd.removeBg": "うしろを けす",
+  "err.mattingFailed": "うしろを けせません でした。もう いちど ためすか ちがう えで ためしてね"
 }

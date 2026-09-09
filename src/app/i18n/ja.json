@@ -1,21 +1,17 @@
 {
   "app.name": "kakomu",
-
   "read.label": "よみかた",
   "read.kanji": "かんじ",
   "read.hira": "ひらがな",
-
   "menu.file": "ファイル",
   "menu.open": "ひらく",
   "menu.save": "保存",
   "menu.finish": "おわる",
-
   "tool.select": "えらぶ",
   "tool.node": "点",
   "tool.path": "線",
   "tool.hole": "穴",
   "tool.stand": "台座",
-
   "action.importImage": "絵を入れる",
   "action.removeBg": "背景を消す",
   "action.makeCutline": "囲む",
@@ -27,24 +23,19 @@
   "action.zoomFit": "全体を見る",
   "action.zoomActual": "実寸で見る",
   "action.delete": "けす",
-
   "empty.title": "絵を入れるところから始めます",
   "empty.drop": "ここに画像をドラッグするか、ボタンを押してください",
   "empty.button": "絵を入れる",
-
   "next.removeBg": "つぎは、背景を消します",
   "next.cutline": "つぎは、まわりを囲みます",
   "next.export": "つぎは、かきだします",
-
   "panel.layers": "かさね",
   "panel.properties": "せってい",
   "panel.checks": "チェック",
-
   "layer.artwork": "え",
   "layer.cutline": "切る線",
   "layer.parts": "部品",
   "layer.guide": "したじき",
-
   "prop.position": "いち",
   "prop.size": "大きさ",
   "prop.rotation": "かたむき",
@@ -55,28 +46,22 @@
   "prop.angle": "かくど",
   "prop.keepRatio": "たてよこの比を保つ",
   "prop.nothingSelected": "なにも選んでいません",
-
   "canvas.page": "しあがり",
   "canvas.bleed": "ふちの余白",
   "canvas.size": "板の大きさ",
-
   "product.keychain": "アクリルキーホルダー",
   "product.stand": "アクリルスタンド",
   "product.custom": "じゆう",
   "product.thickness": "アクリルの厚み",
-
   "unit.mm": "ミリ",
   "unit.deg": "度",
   "unit.dpi": "dpi",
-
   "status.zoom": "ばいりつ",
   "status.dpi": "絵のこまかさ",
   "status.warnings": "ちゅうい",
   "status.ready": "じゅんびできました",
-
   "warn.lowDpi": "絵が粗く印刷されます。もっと大きい画像を使うか、小さく作ってください",
   "warn.lowDpiShort": "絵があらくなります",
-
   "cmd.import": "絵を入れる",
   "cmd.move": "うごかす",
   "cmd.resize": "大きさを変える",
@@ -84,10 +69,24 @@
   "cmd.delete": "けす",
   "cmd.reorder": "ならびを変える",
   "cmd.toggleVisible": "見えかたを変える",
-
   "err.importFailed": "この画像は開けませんでした。べつのファイルで試してください",
   "err.tooLarge": "画像が大きすぎます。小さくしてから入れてください",
-
   "hint.dragToMove": "ドラッグでうごかせます",
-  "hint.shiftKeepsRatio": "Shift を押しながらで、たてよこの比が変わりません"
+  "hint.shiftKeepsRatio": "Shift を押しながらで、たてよこの比が変わりません",
+  "matting.title": "背景を消す",
+  "matting.model": "きれいさ",
+  "matting.fast": "はやい",
+  "matting.nice": "きれい",
+  "matting.illust": "イラスト向け",
+  "matting.modelNote": "「きれい」と「イラスト向け」は、はじめて使うときだけダウンロードします",
+  "matting.edge": "ふちを締める",
+  "matting.compare": "消す前と見くらべる",
+  "matting.download": "モデルをダウンロードしています",
+  "matting.load": "じゅんびしています",
+  "matting.infer": "いま、背景を消しています",
+  "matting.compose": "絵をつくっています",
+  "matting.check": "うまく消せているか見てください。うまくいかないときは「きれいさ」を変えてもう一度ためせます",
+  "matting.needImage": "先に絵を入れてください",
+  "cmd.removeBg": "背景を消す",
+  "err.mattingFailed": "背景を消せませんでした。もう一度ためすか、べつの絵で試してください"
 }

@@ -7,6 +7,15 @@ import {
   selection,
 } from '~/document/store';
 import { setImageBox, toggleLayerVisible, toggleLayerLocked } from '~/document/commands';
+import {
+  compareOriginal,
+  edgeTighten,
+  mattingModel,
+  setCompareOriginal,
+  setEdgeTighten,
+  setMattingModel,
+} from '~/app/session';
+import type { MattingModel } from '~/app/session';
 import type { ImageNode, Layer } from '~/document/types';
 import { MIN_PRINT_DPI, effectiveDpi } from '~/document/types';
 import * as M from '~/geometry/matrix';
@@ -14,6 +23,7 @@ import * as M from '~/geometry/matrix';
 export function Inspector() {
   return (
     <div class="side">
+      <MattingPanel />
       <PropertiesPanel />
       <LayersPanel />
       <ChecksPanel />
@@ -234,6 +244,80 @@ function ChecksPanel() {
             </div>
           )}
         </For>
+      </Show>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------ 背景を消す
+
+const MODEL_CHOICES: { id: MattingModel; key: string }[] = [
+  { id: 'u2netp', key: 'matting.fast' },
+  { id: 'isnet-general-use', key: 'matting.nice' },
+  { id: 'isnet-anime', key: 'matting.illust' },
+];
+
+function MattingPanel() {
+  const target = createMemo<ImageNode | null>(() => {
+    const id = selection()[0];
+    if (!id) return null;
+    const found = findNode(doc(), id);
+    return found && found.node.type === 'image' ? found.node : null;
+  });
+
+  return (
+    <div class="panel">
+      <h3>{t('matting.title')}</h3>
+
+      <div class="field" style={{ 'margin-bottom': '10px' }}>
+        <label>{t('matting.model')}</label>
+        <div class="seg" style={{ width: '100%' }}>
+          <For each={MODEL_CHOICES}>
+            {(c) => (
+              <button
+                type="button"
+                style={{ flex: '1' }}
+                aria-pressed={mattingModel() === c.id}
+                onClick={() => setMattingModel(c.id)}
+              >
+                {t(c.key)}
+              </button>
+            )}
+          </For>
+        </div>
+      </div>
+      <p class="empty-note" style={{ 'font-size': '11px' }}>
+        {t('matting.modelNote')}
+      </p>
+
+      <div class="field" style={{ 'margin-top': '10px' }}>
+        <label>
+          {t('matting.edge')} {Math.round(edgeTighten() * 100)}%
+        </label>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={edgeTighten()}
+          onInput={(e) => setEdgeTighten(Number(e.currentTarget.value))}
+          style={{ width: '100%', 'accent-color': 'var(--cut)' }}
+        />
+      </div>
+
+      <Show when={target()?.matting}>
+        <label class="check">
+          <input
+            type="checkbox"
+            checked={compareOriginal()}
+            onChange={(e) => setCompareOriginal(e.currentTarget.checked)}
+          />
+          {t('matting.compare')}
+        </label>
+        <div class="issue warn" style={{ 'margin-top': '10px' }}>
+          <span class="mark">!</span>
+          <span>{t('matting.check')}</span>
+        </div>
       </Show>
     </div>
   );

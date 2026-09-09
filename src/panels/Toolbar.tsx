@@ -17,8 +17,10 @@ const TOOLS: { id: ToolId; glyph: string; ready: boolean }[] = [
 
 export function TopBar(props: {
   onImport: () => void;
+  onRemoveBackground: () => void;
   busy: boolean;
   hasArtwork: boolean;
+  canRemoveBackground: boolean;
 }) {
   const levels: { id: ReadingLevel; key: string }[] = [
     { id: 'kanji', key: 'read.kanji' },
@@ -35,10 +37,15 @@ export function TopBar(props: {
         {t('action.importImage')}
       </button>
 
-      {/* 背景を消す・囲む は M3 / M4。押せないことを隠さない */}
-      <button class="tbtn" disabled title="M3 でつくります">
+      <button
+        class="tbtn"
+        onClick={props.onRemoveBackground}
+        disabled={props.busy || !props.canRemoveBackground}
+        title={props.canRemoveBackground ? undefined : t('matting.needImage')}
+      >
         {t('action.removeBg')}
       </button>
+      {/* 囲む は M4。押せないことを隠さない */}
       <button class="tbtn" disabled title="M4 でつくります">
         {t('action.makeCutline')}
       </button>

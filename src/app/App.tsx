@@ -1,15 +1,36 @@
-import { Show, createSignal, onCleanup, onMount } from 'solid-js';
+import { Show, createMemo, createSignal, onCleanup, onMount } from 'solid-js';
 import Canvas from '~/canvas/Canvas';
 import { Inspector } from '~/panels/Inspector';
 import { StatusBar } from '~/panels/StatusBar';
 import { TopBar, ToolRail } from '~/panels/Toolbar';
 import type { ToolId } from '~/panels/Toolbar';
 import { initI18n, t } from './i18n';
-import { doc, redo, run, selection, uid, undo } from '~/document/store';
-import { deleteNode, importImage as importImageCommand } from '~/document/commands';
+import {
+  doc,
+  findNode,
+  redo,
+  run,
+  selectOnly,
+  selection,
+  uid,
+  undo,
+} from '~/document/store';
+import {
+  applyMatting,
+  deleteNode,
+  importImage as importImageCommand,
+} from '~/document/commands';
 import type { Asset, ImageNode } from '~/document/types';
 import { ASSUMED_DPI, pxToMm } from '~/document/types';
-import { importImage, pickImageFile } from '~/ipc';
+import { importImage, pickImageFile, removeBackground } from '~/ipc';
+import type { MattingProgress } from '~/ipc';
+import {
+  edgeTighten,
+  mattingModel,
+  mattingProgress,
+  setCompareOriginal,
+  setMattingProgress,
+} from './session';
 import * as M from '~/geometry/matrix';
 
 export default function App() {
@@ -17,15 +38,22 @@ export default function App() {
   const [busy, setBusy] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
 
-  const hasArtwork = () => doc().layers.some((l) => l.role === 'artwork' && l.nodes.length > 0);
+  const imageNodes = createMemo<ImageNode[]>(() =>
+    doc()
+      .layers.filter((l) => l.role === 'artwork')
+      .flatMap((l) => l.nodes)
+      .filter((n): n is ImageNode => n.type === 'image'),
+  );
+
+  const hasArtwork = () => imageNodes().length > 0;
+  const everythingCutOut = () => hasArtwork() && imageNodes().every((n) => n.matting);
 
   onMount(() => {
     initI18n();
 
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
-      const inField = (e.target as HTMLElement | null)?.tagName === 'INPUT';
-      if (inField) return;
+      if ((e.target as HTMLElement | null)?.tagName === 'INPUT') return;
 
       if (mod && e.key.toLowerCase() === 'z') {
         e.preventDefault();
@@ -90,8 +118,9 @@ export default function App() {
         heightMm,
       };
       run(importImageCommand(asset, node));
+      selectOnly(node.id);
     } catch (e) {
-      setError(String(e instanceof Error ? e.message : e));
+      setError(message(e));
     } finally {
       setBusy(false);
     }
@@ -102,33 +131,70 @@ export default function App() {
       const path = await pickImageFile();
       if (path) await placeImage(path);
     } catch (e) {
-      setError(String(e instanceof Error ? e.message : e));
+      setError(message(e));
     }
+  }
+
+  /**
+   * 背景を消す。
+   * かならず元画像から処理するので、モデルを変えて何度でもやり直せる。
+   */
+  async function onRemoveBackground() {
+    const node = targetImage();
+    if (!node) return;
+    const original = doc().assets[node.assetId];
+    if (!original) return;
+
+    setBusy(true);
+    setError(null);
+    setCompareOriginal(false);
+    setMattingProgress({ stage: 'load' });
+    try {
+      const cutout = await removeBackground(
+        original.path,
+        { model: mattingModel(), edgeTighten: edgeTighten() },
+        (p: MattingProgress) => setMattingProgress(p),
+      );
+      run(applyMatting(node.id, cutout, mattingModel(), node.matting));
+      selectOnly(node.id);
+    } catch (e) {
+      setError(message(e));
+    } finally {
+      setMattingProgress(null);
+      setBusy(false);
+    }
+  }
+
+  /** 選んでいるものを優先し、無ければ絵が 1 枚だけならそれを使う */
+  function targetImage(): ImageNode | null {
+    const id = selection()[0];
+    if (id) {
+      const found = findNode(doc(), id);
+      if (found && found.node.type === 'image') return found.node;
+    }
+    const nodes = imageNodes();
+    return nodes.length === 1 ? nodes[0]! : null;
   }
 
   return (
     <div class="app">
-      <TopBar onImport={() => void onImport()} busy={busy()} hasArtwork={hasArtwork()} />
+      <TopBar
+        onImport={() => void onImport()}
+        onRemoveBackground={() => void onRemoveBackground()}
+        busy={busy()}
+        hasArtwork={hasArtwork()}
+        canRemoveBackground={targetImage() !== null}
+      />
       <ToolRail active={tool()} onChange={setTool} />
       <Canvas onRequestImport={() => void onImport()} />
       <Inspector />
       <StatusBar />
 
+      <Show when={mattingProgress()}>{(p) => <ProgressOverlay progress={p()} />}</Show>
+
       <Show when={error()}>
         {(msg) => (
-          <div
-            class="issue error"
-            style={{
-              position: 'fixed',
-              top: '52px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              'z-index': 20,
-              'max-width': '520px',
-              'box-shadow': '0 2px 12px rgba(0,0,0,.18)',
-            }}
-            onClick={() => setError(null)}
-          >
+          <div class="toast issue error" onClick={() => setError(null)}>
             <span class="mark">×</span>
             <span>{msg()}</span>
           </div>
@@ -136,9 +202,58 @@ export default function App() {
       </Show>
 
       {/* つぎにやることを常に見せる（SPEC 9.2） */}
-      <Show when={hasArtwork()}>
-        <div class="next-hint">{t('next.removeBg')}</div>
+      <Show when={hasArtwork() && !mattingProgress()}>
+        <div class="next-hint">
+          {everythingCutOut() ? t('next.cutline') : t('next.removeBg')}
+        </div>
       </Show>
     </div>
   );
+}
+
+/**
+ * 子どもは 10 秒の無反応を「壊れた」と判断する。
+ * いま何をしているかを必ず出す（SPEC 11.1）。
+ */
+function ProgressOverlay(props: { progress: MattingProgress }) {
+  const label = () => {
+    switch (props.progress.stage) {
+      case 'download':
+        return t('matting.download');
+      case 'load':
+        return t('matting.load');
+      case 'infer':
+        return t('matting.infer');
+      case 'compose':
+        return t('matting.compose');
+    }
+  };
+
+  const percent = () =>
+    props.progress.stage === 'download' ? props.progress.percent : null;
+
+  return (
+    <div class="overlay">
+      <div class="overlay-box">
+        <p class="overlay-label">{label()}</p>
+        <div class="bar">
+          <div
+            class="fill"
+            classList={{ indeterminate: percent() === null }}
+            style={percent() !== null ? { width: `${percent()}%` } : undefined}
+          />
+        </div>
+        <Show when={props.progress.stage === 'download'}>
+          <p class="overlay-sub">
+            {(props.progress as { mb: number }).mb.toFixed(1)} /{' '}
+            {(props.progress as { totalMb: number }).totalMb.toFixed(1)} MB
+          </p>
+        </Show>
+      </div>
+    </div>
+  );
+}
+
+function message(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
 }

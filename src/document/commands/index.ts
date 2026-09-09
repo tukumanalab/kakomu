@@ -82,3 +82,25 @@ export function toggleLayerLocked(layerId: string, next: boolean): Command {
     revert: (d) => withLayer(d, layerId, (l) => ({ ...l, locked: !next })),
   };
 }
+
+/**
+ * 背景を消した結果を当てる。
+ * 元画像も元のアセットも消さないので、もどせば必ず元に戻る（SPEC 7.2）。
+ */
+export function applyMatting(
+  id: NodeId,
+  cutout: Asset,
+  model: string,
+  before: ImageNode['matting'],
+): Command {
+  return {
+    labelKey: 'cmd.removeBg',
+    apply: (d) =>
+      withNode(withAsset(d, cutout), id, (n) =>
+        n.type === 'image'
+          ? { ...n, matting: { model, resultAssetId: cutout.id } }
+          : n,
+      ),
+    revert: (d) => withNode(d, id, (n) => (n.type === 'image' ? { ...n, matting: before } : n)),
+  };
+}
