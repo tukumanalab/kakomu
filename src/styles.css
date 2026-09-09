@@ -617,3 +617,14 @@ button {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
   cursor: pointer;
 }
+
+/* まだ落としていないモデルの大きさ。押す前に分かるようにする */
+.seg button .dl-size {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  opacity: 0.75;
+  line-height: 1;
+}
+.seg button[aria-pressed='true'] .dl-size {
+  opacity: 0.9;
+}

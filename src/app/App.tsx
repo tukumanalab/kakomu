@@ -28,6 +28,7 @@ import {
   edgeTighten,
   mattingModel,
   mattingProgress,
+  refreshModels,
   setCompareOriginal,
   setMattingProgress,
 } from './session';
@@ -50,6 +51,7 @@ export default function App() {
 
   onMount(() => {
     initI18n();
+    void refreshModels();
 
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
@@ -162,6 +164,7 @@ export default function App() {
     } finally {
       setMattingProgress(null);
       setBusy(false);
+      void refreshModels();
     }
   }
 

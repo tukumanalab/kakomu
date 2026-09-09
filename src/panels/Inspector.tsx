@@ -11,6 +11,7 @@ import {
   compareOriginal,
   edgeTighten,
   mattingModel,
+  models,
   setCompareOriginal,
   setEdgeTighten,
   setMattingModel,
@@ -273,16 +274,24 @@ function MattingPanel() {
         <label>{t('matting.model')}</label>
         <div class="seg" style={{ width: '100%' }}>
           <For each={MODEL_CHOICES}>
-            {(c) => (
-              <button
-                type="button"
-                style={{ flex: '1' }}
-                aria-pressed={mattingModel() === c.id}
-                onClick={() => setMattingModel(c.id)}
-              >
-                {t(c.key)}
-              </button>
-            )}
+            {(c) => {
+              const info = () => models().find((m) => m.id === c.id);
+              const sizeMb = () => Math.round((info()?.bytes ?? 0) / 1_048_576);
+              return (
+                <button
+                  type="button"
+                  style={{ flex: '1', 'flex-direction': 'column', gap: '2px' }}
+                  aria-pressed={mattingModel() === c.id}
+                  onClick={() => setMattingModel(c.id)}
+                >
+                  <span>{t(c.key)}</span>
+                  {/* まだ手元に無いものは、押す前に大きさが分かるようにする */}
+                  <Show when={info() && !info()!.downloaded}>
+                    <span class="dl-size">↓ {sizeMb()}MB</span>
+                  </Show>
+                </button>
+              );
+            }}
           </For>
         </div>
       </div>

@@ -8,7 +8,7 @@
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use futures_util::StreamExt;
 use image::imageops::FilterType;
@@ -103,7 +103,11 @@ pub fn list_models(app: AppHandle) -> Result<Vec<ModelInfo>> {
 // ---------------------------------------------------------------- 進捗
 
 #[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase", tag = "stage")]
+#[serde(
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase",
+    tag = "stage"
+)]
 pub enum Progress {
     /// モデルの初回ダウンロード
     Download {
@@ -159,16 +163,33 @@ async fn download_model<F: Report>(model: &Model, path: &Path, report: &F) -> Re
     let mut file = fs::File::create(&tmp)?;
     let mut got: u64 = 0;
     let mut stream = response.bytes_stream();
+
+    // 受信チャンクごとに送ると、170MB のモデルでは 1 万件を超える IPC が
+    // WebView に殺到し、描画が追いつかなくなって画面が固まって見える。
+    // 目に見える速さ（0.1 秒）より細かく送っても意味がないので間引く。
+    let mut last_sent = Instant::now();
+    const INTERVAL: Duration = Duration::from_millis(100);
+
     while let Some(chunk) = stream.next().await {
         let chunk = chunk.map_err(|e| Error::Download(e.to_string()))?;
         file.write_all(&chunk)?;
         got += chunk.len() as u64;
-        report(Progress::Download {
-            percent: (got as f64 / total * 100.0).min(100.0),
-            mb: got as f64 / 1_048_576.0,
-            total_mb: total / 1_048_576.0,
-        });
+
+        if last_sent.elapsed() >= INTERVAL {
+            last_sent = Instant::now();
+            report(Progress::Download {
+                percent: (got as f64 / total * 100.0).min(100.0),
+                mb: got as f64 / 1_048_576.0,
+                total_mb: total / 1_048_576.0,
+            });
+        }
     }
+    // 最後に 100% を必ず 1 回送る
+    report(Progress::Download {
+        percent: 100.0,
+        mb: got as f64 / 1_048_576.0,
+        total_mb: total / 1_048_576.0,
+    });
     file.flush()?;
     drop(file);
     fs::rename(&tmp, path)?;
@@ -356,6 +377,32 @@ fn new_id() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// TS 側の MattingProgress と形が食い違うと、画面が固まったように見える。
+    /// 実際にそれで詰まったので、JSON の形をテストで固定しておく。
+    #[test]
+    fn 進捗のjsonがフロントの期待どおり() {
+        let d = serde_json::to_value(Progress::Download {
+            percent: 12.5,
+            mb: 21.0,
+            total_mb: 170.4,
+        })
+        .unwrap();
+        assert_eq!(d["stage"], "download");
+        assert_eq!(d["percent"], 12.5);
+        assert_eq!(d["mb"], 21.0);
+        assert_eq!(d["totalMb"], 170.4, "camelCase になっていること");
+        assert!(d.get("total_mb").is_none(), "snake_case が残っていないこと");
+
+        for (p, want) in [
+            (Progress::Load, "load"),
+            (Progress::Infer, "infer"),
+            (Progress::Compose, "compose"),
+        ] {
+            let v = serde_json::to_value(p).unwrap();
+            assert_eq!(v["stage"], want);
+        }
+    }
 
     #[test]
     fn 既定のモデルは軽いものにする() {
