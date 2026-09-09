@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>kakomu — すきな絵をアクリルキーホルダーにする道具</title>
-<meta name="description" content="青学つくまなラボのための、アクリルスタンド・アクリルキーホルダーをつくる道具。絵を入れて、うしろを消して、まわりを囲む線をつくる。ふりがな・ひらがなに切り替えられます。">
+<meta name="description" content="アクリルスタンド・アクリルキーホルダーをつくる道具。絵を入れて、うしろを消して、まわりを囲む線をつくる。かんじとひらがなを切りかえられます。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%E2%9C%82%EF%B8%8F</text></svg>">
 
 <meta property="og:title" content="kakomu — すきな絵をアクリルキーホルダーにする道具">
-<meta property="og:description" content="青学つくまなラボのための道具。絵を入れて、うしろを消して、まわりを囲む線をつくる。">
+<meta property="og:description" content="絵を入れて、うしろを消して、まわりを囲む線をつくる。切る線は SVG、絵は PDF で出せます。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://tukumanalab.github.io/kakomu/">
 
@@ -30,7 +30,6 @@
   --f-round:"Zen Maru Gothic","UD デジタル教科書体 NK-R","Hiragino Maru Gothic ProN","Zen Kaku Gothic New",system-ui,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --f-body:var(--f-gothic);
-
   --fs:16px; --lh:1.85;
 }
 @media (prefers-color-scheme:dark){
@@ -53,65 +52,42 @@
   --print:#4EBAC6; --print-tint:#12292D;
   --warn:#D6A44A; --warn-tint:#2B2416;
 }
-
-/* ---- よみかたモード ---- */
-html[data-read="ruby"]{ --lh:2.15; }
+/* ひらがなモード：文言・書体・文字サイズ・行間が変わる。構造は変わらない */
 html[data-read="hira"]{ --f-body:var(--f-round); --fs:18px; --lh:2.1; }
-ruby{ ruby-position:over; }
-rt{ font-size:.48em; font-weight:400; color:var(--muted); letter-spacing:.02em; }
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{
-  margin:0; background:var(--paper); color:var(--ink);
-  font-family:var(--f-body); font-size:var(--fs); line-height:var(--lh);
-  -webkit-font-smoothing:antialiased;
-}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--f-body); font-size:var(--fs); line-height:var(--lh); -webkit-font-smoothing:antialiased}
 a{color:inherit}
 :focus-visible{outline:2px solid var(--cut); outline-offset:3px}
 .wrap{max-width:1120px; margin:0 auto; padding:0 28px}
 
-/* ---------------- top bar ---------------- */
-.topbar{
-  border-bottom:1px solid var(--line); position:sticky; top:0; z-index:10;
-  background:color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter:blur(10px);
-}
+/* top bar */
+.topbar{border-bottom:1px solid var(--line); position:sticky; top:0; z-index:10; background:color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter:blur(10px)}
 .topbar .wrap{display:flex; align-items:center; justify-content:space-between; min-height:58px; gap:16px; flex-wrap:wrap; padding-top:6px; padding-bottom:6px}
 .brand{font-weight:900; font-size:19px; letter-spacing:-.02em; text-decoration:none; font-family:var(--f-gothic)}
 .brand i{font-style:normal; color:var(--cut)}
 .barright{display:flex; align-items:center; gap:18px; flex-wrap:wrap}
-
 .reader{display:flex; align-items:center; gap:8px}
 .reader .rl{font-family:var(--f-mono); font-size:10px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase}
 .seg{display:flex; border:1px solid var(--line); background:var(--surface); border-radius:3px; overflow:hidden}
-.seg button{
-  font-family:inherit; font-size:12.5px; line-height:1; padding:8px 12px; min-height:34px;
-  border:0; background:transparent; color:var(--ink-soft); cursor:pointer;
-  border-right:1px solid var(--line);
-}
+.seg button{font-family:inherit; font-size:13px; line-height:1; padding:9px 15px; min-height:36px; border:0; background:transparent; color:var(--ink-soft); cursor:pointer; border-right:1px solid var(--line)}
 .seg button:last-child{border-right:0}
 .seg button:hover{background:var(--surface-2)}
 .seg button[aria-pressed="true"]{background:var(--cut); color:#fff; font-weight:700}
 .topnav{display:flex; gap:18px; font-family:var(--f-mono); font-size:12px}
 .topnav a{color:var(--ink-soft); text-decoration:none}
 .topnav a:hover{color:var(--cut)}
-@media (max-width:820px){ .topnav a.hide-sm{display:none} }
+@media (max-width:860px){ .topnav a.hide-sm{display:none} }
 
-/* ---------------- hero ---------------- */
-.hero{
-  border-bottom:1px solid var(--line);
-  background-image:
-    repeating-linear-gradient(to right, var(--grid) 0 1px, transparent 1px 40px),
-    repeating-linear-gradient(to bottom, var(--grid) 0 1px, transparent 1px 40px);
-}
+/* hero */
+.hero{border-bottom:1px solid var(--line);
+  background-image:repeating-linear-gradient(to right,var(--grid) 0 1px,transparent 1px 40px),repeating-linear-gradient(to bottom,var(--grid) 0 1px,transparent 1px 40px)}
 .hero .wrap{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:60px; align-items:center; padding-top:64px; padding-bottom:64px}
 .badges{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px}
-.badge{
-  display:inline-flex; align-items:center; gap:8px; padding:4px 12px; border-radius:2px;
-  font-size:12px; line-height:1.7; border:1px solid transparent;
-}
-.badge.lab{background:var(--print-tint); color:var(--print); border-color:color-mix(in srgb, var(--print) 28%, transparent)}
-.badge.wip{background:var(--warn-tint); color:var(--warn); border-color:color-mix(in srgb, var(--warn) 30%, transparent)}
+.badge{display:inline-flex; align-items:center; gap:8px; padding:4px 12px; border-radius:2px; font-size:12.5px; line-height:1.7; border:1px solid transparent}
+.badge.lab{background:var(--print-tint); color:var(--print); border-color:color-mix(in srgb,var(--print) 28%,transparent); text-decoration:none}
+.badge.wip{background:var(--warn-tint); color:var(--warn); border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
 .badge .dot{width:6px; height:6px; border-radius:50%; background:currentColor; flex:none}
 h1{font-family:var(--f-gothic); font-size:clamp(56px,10vw,112px); font-weight:900; line-height:.9; letter-spacing:-.04em; margin:0 0 10px}
 .kanji-note{font-family:var(--f-mono); font-size:12px; color:var(--muted); letter-spacing:.05em; margin:0 0 24px}
@@ -119,47 +95,40 @@ h1{font-family:var(--f-gothic); font-size:clamp(56px,10vw,112px); font-weight:90
 .tagline{font-size:clamp(20px,2.5vw,27px); line-height:1.55; font-weight:700; letter-spacing:-.01em; margin:0 0 16px; max-width:22ch; text-wrap:balance}
 .sub{font-size:calc(var(--fs) - .5px); color:var(--ink-soft); margin:0 0 28px; max-width:46ch}
 .ctas{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
-.btn{
-  display:inline-flex; align-items:center; gap:9px; min-height:44px;
-  font-family:var(--f-mono); font-size:13px; font-weight:500;
-  padding:11px 20px; text-decoration:none; border:1px solid var(--ink);
-  background:var(--ink); color:var(--paper); transition:opacity .15s;
-}
+.btn{display:inline-flex; align-items:center; gap:9px; min-height:44px; font-family:var(--f-mono); font-size:13px; font-weight:500; padding:11px 20px; text-decoration:none; border:1px solid var(--ink); background:var(--ink); color:var(--paper); transition:opacity .15s}
 .btn:hover{opacity:.82}
 .btn.ghost{background:transparent; color:var(--ink); border-color:var(--line)}
 .btn.ghost:hover{border-color:var(--cut); color:var(--cut); opacity:1}
 
-/* ---------------- drawing ---------------- */
+/* drawing */
 .plate{background:var(--surface); border:1px solid var(--line); padding:16px 16px 11px}
 .plate svg{display:block; width:100%; height:auto}
 .plate figcaption{display:flex; flex-wrap:wrap; gap:5px 16px; margin-top:11px; padding-top:10px; border-top:1px solid var(--line-soft); font-family:var(--f-mono); font-size:10px; color:var(--muted)}
 .plate figcaption span{display:flex; align-items:center; gap:6px}
 .sw{width:14px; height:2px; flex:none}
 .sw.box{width:8px; height:8px; background:var(--surface); border:1.2px solid var(--cut)}
-.trace{
-  fill:none; stroke:var(--cut); stroke-width:3; stroke-linecap:round; opacity:.85;
-  stroke-dasharray:44 760; stroke-dashoffset:804;
-  animation:run 2.6s cubic-bezier(.45,.05,.3,1) .35s 1 forwards;
-}
+.trace{fill:none; stroke:var(--cut); stroke-width:3; stroke-linecap:round; opacity:.85; stroke-dasharray:44 760; stroke-dashoffset:804; animation:run 2.6s cubic-bezier(.45,.05,.3,1) .35s 1 forwards}
 @keyframes run{ to{ stroke-dashoffset:0 } }
 @media (prefers-reduced-motion:reduce){ .trace{display:none} }
 
-/* ---------------- sections ---------------- */
+/* sections */
 section{border-bottom:1px solid var(--line)}
 section > .wrap{padding-top:62px; padding-bottom:62px}
 .eyebrow{font-family:var(--f-mono); font-size:11px; font-weight:500; letter-spacing:.16em; text-transform:uppercase; color:var(--cut); display:flex; align-items:center; gap:14px; margin:0 0 18px}
 .eyebrow::after{content:""; flex:1; height:1px; background:var(--line)}
 h2{font-size:clamp(24px,3.3vw,33px); font-weight:900; letter-spacing:-.025em; line-height:1.4; margin:0 0 14px; text-wrap:balance}
+h3{font-size:calc(var(--fs) + 1px); font-weight:700; margin:36px 0 12px}
 .lede{font-size:calc(var(--fs) + .5px); color:var(--ink-soft); max-width:58ch; margin:0 0 30px}
 .lede b{color:var(--ink)}
+.body{max-width:58ch; color:var(--ink-soft); margin:0 0 18px}
+.body b{color:var(--ink)}
 
-/* ---------------- steps ---------------- */
+/* steps */
 .figrow{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:32px}
 .fig{border:1px solid var(--line); background:var(--surface); padding:14px 14px 12px}
 .fig svg{display:block; width:100%; height:auto}
 .fig .cap{margin-top:10px; padding-top:9px; border-top:1px solid var(--line-soft); font-family:var(--f-mono); font-size:10.5px; color:var(--muted)}
 .fig .cap b{display:block; font-family:var(--f-body); font-size:14px; color:var(--ink); font-weight:700; margin-top:3px}
-
 ol.steps{list-style:none; margin:0; padding:0; counter-reset:s; max-width:64ch}
 ol.steps li{counter-increment:s; display:grid; grid-template-columns:38px 1fr; gap:14px; padding:12px 0; border-bottom:1px solid var(--line-soft); align-items:baseline}
 ol.steps li:last-child{border-bottom:0}
@@ -167,7 +136,7 @@ ol.steps li::before{content:counter(s,decimal-leading-zero); font-family:var(--f
 ol.steps b{font-weight:700}
 ol.steps span{color:var(--ink-soft); font-size:calc(var(--fs) - 1px)}
 
-/* ---------------- compare ---------------- */
+/* compare */
 .compare{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:22px}
 .cmp{border:1px solid var(--line); background:var(--surface); padding:20px 22px 22px}
 .cmp.now{opacity:.82}
@@ -182,18 +151,29 @@ ol.steps span{color:var(--ink-soft); font-size:calc(var(--fs) - 1px)}
 .respect{border-left:2px solid var(--print); background:var(--print-tint); padding:14px 18px; max-width:66ch}
 .respect p{margin:0; font-size:calc(var(--fs) - 1.5px); color:var(--ink)}
 
-/* ---------------- reading demo ---------------- */
-.readdemo{border:1px solid var(--line); background:var(--surface); overflow-x:auto}
-.readdemo table{border-collapse:collapse; width:100%; min-width:520px}
-.readdemo th,.readdemo td{text-align:left; padding:13px 18px; border-bottom:1px solid var(--line-soft); vertical-align:middle}
-.readdemo thead th{font-family:var(--f-mono); font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); background:var(--surface-2); border-bottom:1px solid var(--line); white-space:nowrap}
-.readdemo tbody tr:last-child td{border-bottom:0}
-.readdemo .lvl{font-family:var(--f-mono); font-size:11px; color:var(--muted); white-space:nowrap}
-.readdemo td.d1{font-family:var(--f-gothic); line-height:2.3}
-.readdemo td.d2{font-family:var(--f-round); line-height:1.9}
-.readdemo .who{font-size:12px; color:var(--muted)}
+/* tables */
+.tw{border:1px solid var(--line); background:var(--surface); overflow-x:auto; margin:0 0 22px}
+.tw table{border-collapse:collapse; width:100%; min-width:480px}
+.tw th,.tw td{text-align:left; padding:12px 18px; border-bottom:1px solid var(--line-soft); vertical-align:top}
+.tw thead th{font-family:var(--f-mono); font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); background:var(--surface-2); border-bottom:1px solid var(--line); white-space:nowrap}
+.tw tbody tr:last-child td{border-bottom:0}
+.tw .lvl{font-family:var(--f-mono); font-size:11px; color:var(--muted); white-space:nowrap}
+.tw .kj{font-family:var(--f-gothic)}
+.tw .hg{font-family:var(--f-round)}
+.tw .note{font-size:calc(var(--fs) - 3px); color:var(--muted)}
 
-/* ---------------- outputs ---------------- */
+/* two-panel: 変わる / 変わらない */
+.twopane{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:22px}
+.pane{border:1px solid var(--line); background:var(--surface); padding:20px 22px 22px}
+.pane h4{margin:0 0 14px; font-size:calc(var(--fs) - 1px); font-weight:700; display:flex; align-items:center; gap:9px}
+.pane h4 .mk{font-family:var(--f-mono); font-size:15px; line-height:1}
+.pane.change h4 .mk{color:var(--cut)}
+.pane.same h4 .mk{color:var(--print)}
+.pane ul{margin:0; padding-left:20px; font-size:calc(var(--fs) - 2px); color:var(--ink-soft)}
+.pane li{margin-bottom:7px}
+.pane li:last-child{margin-bottom:0}
+
+/* outputs */
 .exports{display:grid; grid-template-columns:1fr 1fr; gap:20px}
 .ex{border:1px solid var(--line); background:var(--surface)}
 .ex-top{padding:18px 20px 14px; border-bottom:1px solid var(--line-soft)}
@@ -204,15 +184,7 @@ ol.steps span{color:var(--ink-soft); font-size:calc(var(--fs) - 1px)}
 .ex ul{margin:0; padding:14px 20px 18px 34px; font-size:calc(var(--fs) - 2.5px); color:var(--ink-soft)}
 .ex li{margin-bottom:5px}
 
-/* ---------------- place ---------------- */
-.place{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:36px; align-items:start}
-.info{border:1px solid var(--line); background:var(--surface)}
-.info dl{margin:0; display:grid; grid-template-columns:auto 1fr}
-.info dt{font-family:var(--f-mono); font-size:10.5px; color:var(--muted); letter-spacing:.05em; padding:11px 16px; border-bottom:1px solid var(--line-soft); white-space:nowrap; background:var(--surface-2)}
-.info dd{margin:0; font-size:13px; padding:11px 16px; border-bottom:1px solid var(--line-soft)}
-.info dl > dt:last-of-type, .info dl > dd:last-of-type{border-bottom:0}
-
-/* ---------------- roadmap ---------------- */
+/* roadmap */
 .gantt{border:1px solid var(--line); background:var(--surface); padding:20px 22px 16px; overflow-x:auto}
 .gantt-inner{min-width:560px}
 .gscale{display:grid; grid-template-columns:150px repeat(17,1fr); font-family:var(--f-mono); font-size:10px; color:var(--muted); border-bottom:1px solid var(--line); padding-bottom:6px; margin-bottom:10px}
@@ -224,7 +196,6 @@ ol.steps span{color:var(--ink-soft); font-size:calc(var(--fs) - 1px)}
 .gbar.acc{background:var(--cut-tint); border-color:var(--cut); color:var(--cut); font-weight:600}
 .gnote{font-size:12.5px; color:var(--muted); margin-top:14px; max-width:60ch}
 
-/* ---------------- footer ---------------- */
 footer{padding:40px 0 56px}
 footer .wrap{display:flex; flex-wrap:wrap; gap:18px 32px; align-items:baseline; justify-content:space-between}
 footer .lics{font-family:var(--f-mono); font-size:11.5px; color:var(--muted); display:flex; flex-wrap:wrap; gap:8px 20px}
@@ -234,7 +205,7 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
 @media (max-width:900px){
   .hero .wrap{grid-template-columns:minmax(0,1fr); gap:38px; padding-top:44px; padding-bottom:44px}
   .plate{max-width:380px}
-  .compare,.exports,.place{grid-template-columns:1fr}
+  .compare,.exports,.twopane{grid-template-columns:1fr}
   .figrow{grid-template-columns:1fr; max-width:330px}
 }
 @media (max-width:620px){ .wrap{padding:0 18px} }
@@ -250,14 +221,13 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
         <span class="rl">よみかた</span>
         <div class="seg" role="group" aria-label="文字の読みやすさを変える">
           <button type="button" data-read-btn="kanji" aria-pressed="true">かんじ</button>
-          <button type="button" data-read-btn="ruby"  aria-pressed="false">ふりがな</button>
           <button type="button" data-read-btn="hira"  aria-pressed="false">ひらがな</button>
         </div>
       </div>
       <nav class="topnav">
         <a href="#how" class="hide-sm">つくりかた</a>
-        <a href="#read" class="hide-sm">よみやすさ</a>
-        <a href="#place">つくまなラボ</a>
+        <a href="#read">よみやすさ</a>
+        <a href="#output" class="hide-sm">できるデータ</a>
         <a href="https://github.com/tukumanalab/kakomu">GitHub</a>
       </nav>
     </div>
@@ -269,7 +239,7 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
   <div class="wrap">
     <div>
       <div class="badges">
-        <span class="badge lab" data-t="badge.lab">青学つくまなラボのための道具</span>
+        <a class="badge lab" href="https://sites.google.com/view/tukumanalab/">青学つくまなラボ ↗</a>
         <span class="badge wip"><span class="dot"></span><span data-t="badge.wip">まだ作っている途中です</span></span>
       </div>
       <h1>kakomu</h1>
@@ -297,23 +267,19 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
             <rect x="6" y="6" width="6" height="6" fill="var(--surface-2)"/>
           </pattern>
         </defs>
-
         <use href="#fig-cut" fill="none" stroke="var(--cut)" stroke-width="1.4"/>
         <use href="#fig-cut" class="trace"/>
         <use href="#fig-art" fill="var(--surface-2)" stroke="var(--line)" stroke-width="1"/>
-
         <circle cx="130" cy="30" r="6" fill="none" stroke="var(--cut)" stroke-width="1.4"/>
         <line x1="130" y1="22" x2="130" y2="38" stroke="var(--cut)" stroke-width=".5" stroke-dasharray="2 2"/>
         <line x1="122" y1="30" x2="138" y2="30" stroke="var(--cut)" stroke-width=".5" stroke-dasharray="2 2"/>
         <text x="144" y="27" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--cut)">4ミリ</text>
-
         <g fill="var(--surface)" stroke="var(--cut)" stroke-width="1.2">
           <rect x="115" y="45.5" width="5" height="5"/><rect x="139.5" y="45.5" width="5" height="5"/>
           <rect x="169.5" y="79.5" width="5" height="5"/><rect x="195.5" y="157.5" width="5" height="5"/>
           <rect x="127.5" y="181.5" width="5" height="5"/><rect x="59.5" y="157.5" width="5" height="5"/>
           <rect x="85.5" y="79.5" width="5" height="5"/>
         </g>
-
         <line x1="184" y1="163" x2="198" y2="163" stroke="var(--ink-soft)" stroke-width=".7"/>
         <line x1="184" y1="159" x2="184" y2="167" stroke="var(--ink-soft)" stroke-width=".7"/>
         <line x1="198" y1="159" x2="198" y2="167" stroke="var(--ink-soft)" stroke-width=".7"/>
@@ -334,7 +300,7 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
   <div class="wrap">
     <p class="eyebrow">つくりかた</p>
     <h2 data-t="how.h">はじめてでも、その日のうちに 1 こできる。</h2>
-    <p class="lede" data-t="how.lede">つくまなラボは月曜から金曜の 13 時から 18 時まで開いています。<b>その 1 回で 1 こ作りおわること</b>を目指して設計しています。</p>
+    <p class="lede" data-t="how.lede"><b>1 回で 1 こ作りおわること</b>を目指して設計しています。とちゅうで別のソフトに移りません。</p>
 
     <div class="figrow">
       <figure class="fig">
@@ -368,8 +334,71 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
       <li><span><b data-t="st.3b">囲む。</b><span data-t="st.3">絵の 3 ミリ外がわに、切るための線ができます。</span></span></li>
       <li><span><b data-t="st.4b">かたちを整える。</b><span data-t="st.4">線の上の点をドラッグして、細すぎるところを太くします。</span></span></li>
       <li><span><b data-t="st.5b">部品をつける。</b><span data-t="st.5">キーホルダーなら穴、立てるなら台座。大きさは決めてあります。</span></span></li>
-      <li><span><b data-t="st.6b">かきだす。</b><span data-t="st.6">切るデータと刷るデータが、いっしょに出てきます。</span></span></li>
+      <li><span><b data-t="st.6b">かきだす。</b><span data-t="st.6">切るデータと印刷するデータが、いっしょに出てきます。</span></span></li>
     </ol>
+  </div>
+</section>
+
+<!-- ================= READING ================= -->
+<section id="read">
+  <div class="wrap">
+    <p class="eyebrow">よみやすさ</p>
+    <h2 data-t="read.h">同じ画面のまま、文字だけ変わる。</h2>
+    <p class="lede" data-t="read.lede">使う人は小学校 1 年生から先生までいます。だから<b>子ども用の画面を別に作りません</b>。画面の作りはそのままで、<b>かんじ</b>と<b>ひらがな</b>を切りかえます。このページの右上でもためせます。</p>
+
+    <h3 data-t="read.h1">切りかえると、こう変わります</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th data-t="read.th0">ボタンや メッセージ</th><th data-t="read.th1">かんじ</th><th data-t="read.th2">ひらがな</th></tr></thead>
+        <tbody>
+          <tr><td class="note" data-t="read.i1">画像を読みこむ</td><td class="kj">絵を入れる</td><td class="hg">えを いれる</td></tr>
+          <tr><td class="note" data-t="read.i2">背景を透過する</td><td class="kj">背景を消す</td><td class="hg">うしろを けす</td></tr>
+          <tr><td class="note" data-t="read.i3">カットラインを生成する</td><td class="kj">切る線をつくる</td><td class="hg">きる せんを つくる</td></tr>
+          <tr><td class="note" data-t="read.i4">オフセット量</td><td class="kj">ふちの太さ　3mm</td><td class="hg">ふちの ふとさ　3ミリ</td></tr>
+          <tr><td class="note" data-t="read.i5">ノードを編集する</td><td class="kj">点をうごかす</td><td class="hg">てんを うごかす</td></tr>
+          <tr><td class="note" data-t="read.i6">レイヤー</td><td class="kj">かさね</td><td class="hg">かさね</td></tr>
+          <tr><td class="note" data-t="read.i7">エクスポート</td><td class="kj">かきだす</td><td class="hg">ほぞんする</td></tr>
+          <tr><td class="note" data-t="read.i8">最小幅エラー</td><td class="kj">ここが細すぎます。折れやすいので、ふちの太さを増やしてください</td><td class="hg">ここが ほそすぎます。おれちゃうので ふちを ふとく してね</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="twopane">
+      <div class="pane change">
+        <h4><span class="mk">±</span><span data-t="read.ch">変わるもの</span></h4>
+        <ul>
+          <li data-t="read.ch1"><b>文言</b> — 言いかえた別のことばに差しかわる</li>
+          <li data-t="read.ch2"><b>書体</b> — 丸ゴシックになる。教科書に近い字のかたち</li>
+          <li data-t="read.ch3"><b>文字の大きさ</b> — 1.15 倍になる</li>
+          <li data-t="read.ch4"><b>行のあいだ</b> — 広がって読みやすくなる</li>
+          <li data-t="read.ch5"><b>単位</b> — 「3mm」が「3ミリ」になる</li>
+        </ul>
+      </div>
+      <div class="pane same">
+        <h4><span class="mk">=</span><span data-t="read.sa">変わらないもの</span></h4>
+        <ul>
+          <li data-t="read.sa1"><b>ボタンの位置</b> — どこに何があるかは同じ</li>
+          <li data-t="read.sa2"><b>できること</b> — 機能をへらしません</li>
+          <li data-t="read.sa3"><b>作ったデータ</b> — 出てくる SVG と PDF は同じ</li>
+          <li data-t="read.sa4"><b>となりの人と話せる</b> — 画面が同じなので、教える人と見ている画面がずれない</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 data-t="read.h2">ふりがなではなく、言いかえにした理由</h3>
+    <p class="body" data-t="read.why1">「背景」に「はいけい」とふりがなを振っても、意味は分かりません。読めることと分かることは別です。だから<b>人が言いかえを書き下ろします</b>。機械での自動変換はしません。</p>
+    <p class="body" data-t="read.why2">ふりがなモードも作りません。ルビは行のあいだを大きく崩すので、レイアウトが 2 段階で変わることになります。読めないなら、ふりがなを足すより<b>ことばごと変えた方が確実</b>です。</p>
+
+    <h3 data-t="read.h3">ひらがなを書くときの決まり</h3>
+    <ol class="steps">
+      <li><span><b data-t="read.r1b">分かち書きにする。</b><span data-t="read.r1">教科書に合わせて、ことばのくぎりでスペースを空けます。「きるせんを つくる」</span></span></li>
+      <li><span><b data-t="read.r2b">1 文を 20 文字までにする。</b><span data-t="read.r2">長い文は読むのをやめてしまいます。</span></span></li>
+      <li><span><b data-t="read.r3b">カタカナは意味が伝わるものだけ。</b><span data-t="read.r3">「アクリル」「データ」は残します。「オフセット」「レイヤー」は使いません。</span></span></li>
+      <li><span><b data-t="read.r4b">単位はカタカナで書く。</b><span data-t="read.r4">「3mm」ではなく「3ミリ」。</span></span></li>
+      <li><span><b data-t="read.r5b">打ち消しの言い方をさける。</b><span data-t="read.r5">「保存されていません」ではなく「まだ ほぞんして いません」。</span></span></li>
+    </ol>
+
+    <p class="body" data-t="read.last">切りかえは画面の右上にいつも置いてあり、設定の奥にはしまいません。1 回おすだけで変わり、次に開いたときも覚えています。書体は Windows の UD デジタル教科書体などを使いますが、Mac と Linux には入っていないので<b>ソフトにいっしょに入れて配ります</b>。どのパソコンでも同じ読みやすさになるようにするためです。</p>
   </div>
 </section>
 
@@ -378,7 +407,7 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
   <div class="wrap">
     <p class="eyebrow">これまでとの ちがい</p>
     <h2 data-t="cmp.h">Inkscape でやっていたことを、みんなが使えるかたちに。</h2>
-    <p class="lede" data-t="cmp.lede">つくまなラボでは今 Inkscape を使っています。とても強いソフトですが、この作業をするには手数が多く、<b>言葉もむずかしい</b>。小さい子には渡しにくい道具です。</p>
+    <p class="lede" data-t="cmp.lede">今は Inkscape を使っています。とても強いソフトですが、この作業をするには手数が多く、<b>言葉もむずかしい</b>。小さい子には渡しにくい道具です。</p>
     <div class="compare">
       <div class="cmp now">
         <h3 data-t="cmp.a.h">Inkscape でつくるとき</h3>
@@ -408,50 +437,16 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
       </div>
     </div>
     <div class="respect">
-      <p data-t="cmp.respect">Inkscape はとても強力なソフトです。kakomu はその代わりではなく、そこにある作りかたのうち<b>この 1 つだけ</b>を取り出して、初等部の子から先生までが使えるように作り直したものです。</p>
+      <p data-t="cmp.respect">Inkscape はとても強力なソフトです。kakomu はその代わりではなく、そこにある作りかたのうち<b>この 1 つだけ</b>を取り出して、小学生から先生までが使えるように作り直したものです。</p>
     </div>
-  </div>
-</section>
-
-<!-- ================= READING ================= -->
-<section id="read">
-  <div class="wrap">
-    <p class="eyebrow">よみやすさ</p>
-    <h2 data-t="read.h">同じ画面のまま、文字だけ変わる。</h2>
-    <p class="lede" data-t="read.lede">つくまなラボは初等部から先生まで使う場所です。だから<b>子ども用の画面を別に作りません</b>。ボタンの位置も機能も同じまま、文字の読みやすさだけを切りかえます。このページの右上でもためせます。</p>
-    <div class="readdemo">
-      <table>
-        <thead>
-          <tr><th data-t="read.th1">よみかた</th><th data-t="read.th2">ボタンの文字</th><th data-t="read.th3">だれ向け</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="lvl">かんじ</td>
-            <td>背景を消す</td>
-            <td class="who" data-t="read.who1">中学生から上</td>
-          </tr>
-          <tr>
-            <td class="lvl">ふりがな</td>
-            <td class="d1"><ruby>背景<rt>はいけい</rt></ruby>を<ruby>消<rt>け</rt></ruby>す</td>
-            <td class="who" data-t="read.who2">小学校の中学年から</td>
-          </tr>
-          <tr>
-            <td class="lvl">ひらがな</td>
-            <td class="d2">うしろを けす</td>
-            <td class="who" data-t="read.who3">小学校の低学年</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="lede" style="margin-top:26px" data-t="read.note">ひらがなは、ふりがなを機械で振っただけでは通じません。「背景」を「はいけい」と読ませても意味は分かりません。だから<b>言いかえを人が書きます</b>。書体も丸ゴシックに変わり、文字が少し大きくなります。</p>
   </div>
 </section>
 
 <!-- ================= OUTPUT ================= -->
 <section id="output">
   <div class="wrap">
-    <p class="eyebrow">できあがるもの</p>
-    <h2 data-t="out.h">切る機械と、刷る機械に、そのまま渡せる。</h2>
+    <p class="eyebrow">できるデータ</p>
+    <h2 data-t="out.h">切る機械と、印刷する機械に、そのまま渡せる。</h2>
     <p class="lede" data-t="out.lede">どこかに送るのではなく、<b>同じ部屋にある機械に持っていきます</b>。書き出したあとに、どっちをどの機械に渡すかも画面に出ます。</p>
     <div class="exports">
       <div class="ex ex-cut">
@@ -469,7 +464,7 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
       <div class="ex ex-print">
         <div class="ex-top">
           <div class="fmt">PDF</div>
-          <div class="what" data-t="out.b.w">する データ</div>
+          <div class="what" data-t="out.b.w">いんさつする データ</div>
           <div class="to" data-t="out.b.t">→ UV プリンターへ</div>
         </div>
         <ul>
@@ -488,42 +483,17 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
     <p class="eyebrow">きれるか しらべる</p>
     <h2 data-t="chk.h">切れない形は、切る前に教えます。</h2>
     <p class="lede" data-t="chk.lede">細すぎるところは折れます。小さすぎる穴は開きません。失敗したアクリル板はもどってこないので、<b>切る前に気づけること</b>を大事にしています。だめな理由と、どう直すかを必ずいっしょに出します。</p>
-    <div class="readdemo">
+    <div class="tw">
       <table>
         <thead>
           <tr><th data-t="chk.th1">しらべること</th><th data-t="chk.th2">きじゅん</th><th data-t="chk.th3">出るメッセージ（ひらがな）</th></tr>
         </thead>
         <tbody>
-          <tr><td data-t="chk.r1">細さ</td><td class="lvl">1.5ミリ</td><td class="d2">ここが ほそすぎます。おれちゃうので ふちを ふとく してね</td></tr>
-          <tr><td data-t="chk.r2">穴の大きさ</td><td class="lvl">2ミリ</td><td class="d2">この あなは ちいさすぎて きかいが はいりません</td></tr>
-          <tr><td data-t="chk.r3">絵のこまかさ</td><td class="lvl">300dpi</td><td class="d2">えが あらく なります。もっと おおきい えを つかってね</td></tr>
+          <tr><td data-t="chk.r1">細さ</td><td class="lvl">1.5ミリ</td><td class="hg">ここが ほそすぎます。おれちゃうので ふちを ふとく してね</td></tr>
+          <tr><td data-t="chk.r2">穴の大きさ</td><td class="lvl">2ミリ</td><td class="hg">この あなは ちいさすぎて きかいが はいりません</td></tr>
+          <tr><td data-t="chk.r3">絵のこまかさ</td><td class="lvl">300dpi</td><td class="hg">えが あらく なります。もっと おおきい えを つかってね</td></tr>
         </tbody>
       </table>
-    </div>
-  </div>
-</section>
-
-<!-- ================= PLACE ================= -->
-<section id="place">
-  <div class="wrap">
-    <p class="eyebrow">つかえる ばしょ</p>
-    <h2 data-t="pl.h">青学つくまなラボ</h2>
-    <div class="place">
-      <div>
-        <p class="lede" data-t="pl.lede">「<b>創ることで学ぶ</b>」場所として、世代や分野の壁を取りはらってものづくりに取り組むためのメイカースペースです。3D プリンターとレーザー加工機があります。青山学院の関係者なら、開いている時間は予約なしで使えます。</p>
-        <div class="ctas">
-          <a class="btn ghost" href="https://sites.google.com/view/tukumanalab/">つくまなラボのサイト →</a>
-        </div>
-      </div>
-      <div class="info">
-        <dl>
-          <dt>ばしょ</dt><dd>青山学院大学 青山キャンパス<br>10号館 地下1階</dd>
-          <dt>あいてる日</dt><dd>月・火・水・木・金</dd>
-          <dt>じかん</dt><dd>13:00 — 18:00</dd>
-          <dt>よやく</dt><dd>いりません</dd>
-          <dt>うんえい</dt><dd>社会連携推進機構<br>革新技術共創研究部会</dd>
-        </dl>
-      </div>
     </div>
   </div>
 </section>
@@ -541,13 +511,13 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
           <i style="grid-column:2/8">1しゅうめ</i><i style="grid-column:8/14">7しゅうめ</i><i style="grid-column:14/19">13 — 17しゅうめ</i>
         </div>
         <div class="grow"><div class="glab"><b>M0</b><span data-t="rd.0">きほん</span></div><div class="gbar acc" style="grid-column:2/4">2しゅう — 3つのOSで動く</div></div>
-        <div class="grow"><div class="glab"><b>M1</b><span data-t="rd.1">かきだし</span></div><div class="gbar" style="grid-column:4/6">2しゅう — SVGとPDFが出る</div></div>
+        <div class="grow"><div class="glab"><b>M1</b><span data-t="rd.1">かきだし</span></div><div class="gbar" style="grid-column:4/6">2しゅう — 実機に一度通す</div></div>
         <div class="grow"><div class="glab"><b>M2</b><span data-t="rd.2">せんの へんしゅう</span></div><div class="gbar acc" style="grid-column:6/9">3しゅう — 手で囲めば作れる</div></div>
         <div class="grow"><div class="glab"><b>M3</b><span data-t="rd.3">うしろを けす</span></div><div class="gbar" style="grid-column:9/11">2しゅう — 1回おせば消える</div></div>
         <div class="grow"><div class="glab"><b>M4</b><span data-t="rd.4">かこむ</span></div><div class="gbar acc" style="grid-column:11/14">3しゅう — 通しで作れる</div></div>
-        <div class="grow"><div class="glab"><b>M5</b><span data-t="rd.5">よみやすさ・ぶひん</span></div><div class="gbar" style="grid-column:14/17">3しゅう — ラボで実際に試す</div></div>
-        <div class="grow"><div class="glab"><b>M6</b><span data-t="rd.6">くばる</span></div><div class="gbar" style="grid-column:17/19">2しゅう — ラボのPCに入る</div></div>
-        <div class="gnote" data-t="rd.note">ぜんぶで 17 しゅう。M5 では、実際につくまなラボで初等部の子に通しで作ってもらい、つまったところをそのまま直すところまでを含みます。</div>
+        <div class="grow"><div class="glab"><b>M5</b><span data-t="rd.5">よみやすさ・ぶひん</span></div><div class="gbar acc" style="grid-column:14/17">3しゅう — 実際に試す</div></div>
+        <div class="grow"><div class="glab"><b>M6</b><span data-t="rd.6">くばる</span></div><div class="gbar" style="grid-column:17/19">2しゅう — PCに入る</div></div>
+        <div class="gnote" data-t="rd.note">ぜんぶで 17 しゅう。M5 では、実際に小学生に通しで作ってもらい、つまったところをそのまま直すところまでを含みます。</div>
       </div>
     </div>
   </div>
@@ -569,112 +539,96 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
 </footer>
 
 <script>
-// ---- よみかた（かんじ / ふりがな / ひらがな）の切りかえ -------------------
-// ページの HTML は「かんじ」の状態で書かれている。JS を切っても読める。
-// ふりがな・ひらがなの文言だけをここに持ち、切りかえ時に差し替える。
-const V = {
-  "badge.lab":  {ruby:"<ruby>青学<rt>あおがく</rt></ruby>つくまなラボのための<ruby>道具<rt>どうぐ</rt></ruby>", hira:"あおがく つくまなラボの どうぐ"},
-  "badge.wip":  {ruby:"まだ<ruby>作<rt>つく</rt></ruby>っている<ruby>途中<rt>とちゅう</rt></ruby>です", hira:"まだ つくって いる とちゅうです"},
-  "hero.kanji": {ruby:"<ruby>囲<rt>かこ</rt></ruby>む", hira:"かこむ"},
-  "hero.kanji2":{ruby:"<ruby>絵<rt>え</rt></ruby>を<ruby>囲<rt>かこ</rt></ruby>む<ruby>線<rt>せん</rt></ruby>をつくる。", hira:"えを かこむ せんを つくる。"},
-  "hero.tagline":{ruby:"すきな<ruby>絵<rt>え</rt></ruby>を、アクリルのキーホルダーにする。", hira:"すきな えを アクリルの キーホルダーに する。"},
-  "hero.sub":   {ruby:"<ruby>絵<rt>え</rt></ruby>を<ruby>入<rt>い</rt></ruby>れて、うしろを<ruby>消<rt>け</rt></ruby>して、まわりを<ruby>囲<rt>かこ</rt></ruby>む<ruby>線<rt>せん</rt></ruby>をつくります。あとはレーザー<ruby>加工機<rt>かこうき</rt></ruby>と UV プリンターに<ruby>渡<rt>わた</rt></ruby>すだけ。",
-                 hira:"えを いれて、うしろを けして、まわりを かこむ せんを つくります。あとは レーザーかこうきと UVプリンターに わたすだけ。"},
+// よみかたの切りかえ。HTML は「かんじ」で書かれているので JS を切っても読める。
+// ひらがなは自動変換ではなく、ここに書き下ろしたものに差しかえる。
+const H = {
+  "badge.wip":"まだ つくって いる とちゅうです",
+  "hero.kanji":"かこむ",
+  "hero.kanji2":"えを かこむ せんを つくる。",
+  "hero.tagline":"すきな えを アクリルの キーホルダーに する。",
+  "hero.sub":"えを いれて、うしろを けして、まわりを かこむ せんを つくります。あとは レーザーかこうきと UVプリンターに わたすだけ。",
 
-  "how.h":      {ruby:"はじめてでも、その<ruby>日<rt>ひ</rt></ruby>のうちに 1 こできる。", hira:"はじめてでも その ひの うちに 1こ できる。"},
-  "how.lede":   {ruby:"つくまなラボは<ruby>月曜<rt>げつよう</rt></ruby>から<ruby>金曜<rt>きんよう</rt></ruby>の 13 <ruby>時<rt>じ</rt></ruby>から 18 <ruby>時<rt>じ</rt></ruby>まで<ruby>開<rt>あ</rt></ruby>いています。<b>その 1 <ruby>回<rt>かい</rt></ruby>で 1 こ<ruby>作<rt>つく</rt></ruby>りおわること</b>を<ruby>目指<rt>めざ</rt></ruby>して<ruby>設計<rt>せっけい</rt></ruby>しています。",
-                 hira:"つくまなラボは げつようから きんようの 13じから 18じまで あいて います。<b>その 1かいで 1こ つくりおわる こと</b>を めざして います。"},
-  "fig.1":      {ruby:"えを いれる", hira:"えを いれる"},
-  "fig.2":      {ruby:"うしろを けす", hira:"うしろを けす"},
-  "fig.3":      {ruby:"かこむ", hira:"かこむ"},
-  "st.1b":      {ruby:"<ruby>絵<rt>え</rt></ruby>を<ruby>入<rt>い</rt></ruby>れる。", hira:"えを いれる。"},
-  "st.1":       {ruby:"<ruby>写真<rt>しゃしん</rt></ruby>でもイラストでも、<ruby>画面<rt>がめん</rt></ruby>にドラッグするだけ。", hira:"しゃしんでも えでも がめんに ドラッグ するだけ。"},
-  "st.2b":      {ruby:"うしろを<ruby>消<rt>け</rt></ruby>す。", hira:"うしろを けす。"},
-  "st.2":       {ruby:"ボタンを 1 <ruby>回<rt>かい</rt></ruby>おすと、<ruby>背景<rt>はいけい</rt></ruby>が<ruby>自動<rt>じどう</rt></ruby>で<ruby>消<rt>き</rt></ruby>えます。インターネットに<ruby>送<rt>おく</rt></ruby>りません。",
-                 hira:"ボタンを 1かい おすと うしろが きえます。インターネットには おくりません。"},
-  "st.3b":      {ruby:"<ruby>囲<rt>かこ</rt></ruby>む。", hira:"かこむ。"},
-  "st.3":       {ruby:"<ruby>絵<rt>え</rt></ruby>の 3 ミリ<ruby>外<rt>そと</rt></ruby>がわに、<ruby>切<rt>き</rt></ruby>るための<ruby>線<rt>せん</rt></ruby>ができます。", hira:"えの 3ミリ そとがわに きる せんが できます。"},
-  "st.4b":      {ruby:"かたちを<ruby>整<rt>ととの</rt></ruby>える。", hira:"かたちを なおす。"},
-  "st.4":       {ruby:"<ruby>線<rt>せん</rt></ruby>の<ruby>上<rt>うえ</rt></ruby>の<ruby>点<rt>てん</rt></ruby>をドラッグして、<ruby>細<rt>ほそ</rt></ruby>すぎるところを<ruby>太<rt>ふと</rt></ruby>くします。", hira:"せんの うえの てんを ひっぱって ほそい ところを ふとく します。"},
-  "st.5b":      {ruby:"<ruby>部品<rt>ぶひん</rt></ruby>をつける。", hira:"ぶひんを つける。"},
-  "st.5":       {ruby:"キーホルダーなら<ruby>穴<rt>あな</rt></ruby>、<ruby>立<rt>た</rt></ruby>てるなら<ruby>台座<rt>だいざ</rt></ruby>。<ruby>大<rt>おお</rt></ruby>きさは<ruby>決<rt>き</rt></ruby>めてあります。", hira:"キーホルダーなら あな、たてるなら たてる ぶひん。おおきさは きまって います。"},
-  "st.6b":      {ruby:"かきだす。", hira:"ほぞん する。"},
-  "st.6":       {ruby:"<ruby>切<rt>き</rt></ruby>るデータと<ruby>刷<rt>す</rt></ruby>るデータが、いっしょに<ruby>出<rt>で</rt></ruby>てきます。", hira:"きる データと する データが いっしょに でて きます。"},
+  "how.h":"はじめてでも その ひの うちに 1こ できる。",
+  "how.lede":"<b>1かいで 1こ つくりおわる こと</b>を めざして います。とちゅうで ほかの ソフトに うつりません。",
+  "fig.1":"えを いれる", "fig.2":"うしろを けす", "fig.3":"かこむ",
+  "st.1b":"えを いれる。", "st.1":"しゃしんでも えでも がめんに ドラッグ するだけ。",
+  "st.2b":"うしろを けす。", "st.2":"ボタンを 1かい おすと うしろが きえます。インターネットには おくりません。",
+  "st.3b":"かこむ。", "st.3":"えの 3ミリ そとがわに きる せんが できます。",
+  "st.4b":"かたちを なおす。", "st.4":"せんの うえの てんを ひっぱって ほそい ところを ふとく します。",
+  "st.5b":"ぶひんを つける。", "st.5":"キーホルダーなら あな、たてるなら たてる ぶひん。おおきさは きまって います。",
+  "st.6b":"ほぞん する。", "st.6":"きる データと いんさつする データが いっしょに でて きます。",
 
-  "cmp.h":      {ruby:"Inkscape でやっていたことを、みんなが<ruby>使<rt>つか</rt></ruby>えるかたちに。", hira:"Inkscape で やって いた ことを みんなが つかえる ように。"},
-  "cmp.lede":   {ruby:"つくまなラボでは<ruby>今<rt>いま</rt></ruby> Inkscape を<ruby>使<rt>つか</rt></ruby>っています。とても<ruby>強<rt>つよ</rt></ruby>いソフトですが、この<ruby>作業<rt>さぎょう</rt></ruby>をするには<ruby>手数<rt>てかず</rt></ruby>が<ruby>多<rt>おお</rt></ruby>く、<b><ruby>言葉<rt>ことば</rt></ruby>もむずかしい</b>。<ruby>小<rt>ちい</rt></ruby>さい<ruby>子<rt>こ</rt></ruby>には<ruby>渡<rt>わた</rt></ruby>しにくい<ruby>道具<rt>どうぐ</rt></ruby>です。",
-                 hira:"つくまなラボでは いま Inkscape を つかって います。とても つよい ソフトですが この さぎょうを するには てじゅんが おおくて <b>ことばも むずかしい</b>。ちいさい こには わたしにくい どうぐです。"},
-  "cmp.a.h":    {ruby:"Inkscape でつくるとき", hira:"Inkscape で つくる とき"},
-  "cmp.a.1":    {ruby:"<ruby>画像<rt>がぞう</rt></ruby>を<ruby>読<rt>よ</rt></ruby>みこむ", hira:"えを よみこむ"},
-  "cmp.a.2":    {ruby:"<ruby>背景<rt>はいけい</rt></ruby>を<ruby>消<rt>け</rt></ruby>す（べつのソフトがいる）", hira:"うしろを けす（べつの ソフトが いる）"},
-  "cmp.a.3":    {ruby:"「ビットマップのトレース」でパスにする", hira:"「ビットマップの トレース」を つかう"},
-  "cmp.a.4":    {ruby:"「アウトセット」を<ruby>何回<rt>なんかい</rt></ruby>かおして<ruby>太<rt>ふと</rt></ruby>らせる", hira:"「アウトセット」を なんかいも おす"},
-  "cmp.a.5":    {ruby:"ノードを<ruby>編集<rt>へんしゅう</rt></ruby>してかたちを<ruby>直<rt>なお</rt></ruby>す", hira:"てんを うごかして かたちを なおす"},
-  "cmp.a.6":    {ruby:"<ruby>穴<rt>あな</rt></ruby>と<ruby>台座<rt>だいざ</rt></ruby>を<ruby>自分<rt>じぶん</rt></ruby>で<ruby>描<rt>か</rt></ruby>く（<ruby>大<rt>おお</rt></ruby>きさを<ruby>調<rt>しら</rt></ruby>べる）", hira:"あなと だいざを じぶんで かく（おおきさを しらべる）"},
-  "cmp.a.7":    {ruby:"SVG で<ruby>保存<rt>ほぞん</rt></ruby>、PDF で<ruby>書<rt>か</rt></ruby>き<ruby>出<rt>だ</rt></ruby>し（べつべつに<ruby>設定<rt>せってい</rt></ruby>）", hira:"SVG と PDF を べつべつに ほぞんする"},
-  "cmp.a.f":    {ruby:"<ruby>専門<rt>せんもん</rt></ruby>の<ruby>言葉<rt>ことば</rt></ruby>が<ruby>多<rt>おお</rt></ruby>い ／ <ruby>長<rt>なが</rt></ruby>さの<ruby>単位<rt>たんい</rt></ruby>がややこしい ／ <ruby>大<rt>おお</rt></ruby>きさは<ruby>自分<rt>じぶん</rt></ruby>で<ruby>調<rt>しら</rt></ruby>べる",
-                 hira:"むずかしい ことばが おおい ／ ながさの たんいが ややこしい ／ おおきさは じぶんで しらべる"},
-  "cmp.b.h":    {ruby:"kakomu でつくるとき", hira:"kakomu で つくる とき"},
-  "cmp.b.1":    {ruby:"<ruby>絵<rt>え</rt></ruby>を<ruby>入<rt>い</rt></ruby>れる", hira:"えを いれる"},
-  "cmp.b.2":    {ruby:"「うしろを けす」をおす", hira:"「うしろを けす」を おす"},
-  "cmp.b.3":    {ruby:"「かこむ」をおす（3 ミリ）", hira:"「かこむ」を おす（3ミリ）"},
-  "cmp.b.4":    {ruby:"<ruby>点<rt>てん</rt></ruby>をうごかして<ruby>整<rt>ととの</rt></ruby>える", hira:"てんを うごかして なおす"},
-  "cmp.b.5":    {ruby:"<ruby>穴<rt>あな</rt></ruby>や<ruby>台座<rt>だいざ</rt></ruby>をえらぶ（<ruby>大<rt>おお</rt></ruby>きさは<ruby>入<rt>はい</rt></ruby>っている）", hira:"あなや だいざを えらぶ（おおきさは はいって いる）"},
-  "cmp.b.6":    {ruby:"「かきだす」をおす（2 つ<ruby>同時<rt>どうじ</rt></ruby>）", hira:"「ほぞん」を おす（2つ いっしょ）"},
-  "cmp.b.f":    {ruby:"ひらがなでも<ruby>使<rt>つか</rt></ruby>える ／ <ruby>長<rt>なが</rt></ruby>さはぜんぶミリ ／ <ruby>大<rt>おお</rt></ruby>きさは<ruby>入<rt>はい</rt></ruby>っている",
-                 hira:"ひらがなでも つかえる ／ ながさは ぜんぶ ミリ ／ おおきさは はいって いる"},
-  "cmp.respect":{ruby:"Inkscape はとても<ruby>強力<rt>きょうりょく</rt></ruby>なソフトです。kakomu はその<ruby>代<rt>か</rt></ruby>わりではなく、そこにある<ruby>作<rt>つく</rt></ruby>りかたのうち<b>この 1 つだけ</b>を<ruby>取<rt>と</rt></ruby>り<ruby>出<rt>だ</rt></ruby>して、<ruby>初等部<rt>しょとうぶ</rt></ruby>の<ruby>子<rt>こ</rt></ruby>から<ruby>先生<rt>せんせい</rt></ruby>までが<ruby>使<rt>つか</rt></ruby>えるように<ruby>作<rt>つく</rt></ruby>り<ruby>直<rt>なお</rt></ruby>したものです。",
-                 hira:"Inkscape は とても つよい ソフトです。kakomu は その かわりでは ありません。たくさん ある つくりかたの うち <b>この ひとつだけ</b>を とりだして ちいさい こでも つかえる ように なおした ものです。"},
+  "read.h":"おなじ がめんの まま もじだけ かわる。",
+  "read.lede":"つかう ひとは しょうがっこう 1ねんせいから せんせいまで います。だから <b>こども ようの がめんを べつに つくりません</b>。がめんの つくりは そのままで <b>かんじ</b>と <b>ひらがな</b>を きりかえます。この ページの みぎうえで ためして みてね。",
+  "read.h1":"きりかえると こう かわります",
+  "read.th0":"ボタンや メッセージ", "read.th1":"かんじ", "read.th2":"ひらがな",
+  "read.i1":"えを よみこむ", "read.i2":"うしろを とうめいに する", "read.i3":"きる せんを つくる",
+  "read.i4":"ふちの ふとさ", "read.i5":"てんを うごかす", "read.i6":"かさね",
+  "read.i7":"ほぞんする", "read.i8":"ほそすぎる ときの メッセージ",
+  "read.ch":"かわる もの",
+  "read.ch1":"<b>ことば</b> — いいかえた べつの ことばに かわる",
+  "read.ch2":"<b>もじの かたち</b> — まるい かたちに なる。きょうかしょに ちかい",
+  "read.ch3":"<b>もじの おおきさ</b> — 1.15ばいに なる",
+  "read.ch4":"<b>ぎょうの あいだ</b> — ひろがって よみやすく なる",
+  "read.ch5":"<b>たんい</b> — 「3mm」が「3ミリ」に なる",
+  "read.sa":"かわらない もの",
+  "read.sa1":"<b>ボタンの ばしょ</b> — どこに なにが あるかは おなじ",
+  "read.sa2":"<b>できる こと</b> — きのうは へりません",
+  "read.sa3":"<b>つくった データ</b> — でて くる SVG と PDF は おなじ",
+  "read.sa4":"<b>となりの ひとと はなせる</b> — がめんが おなじなので おしえる ひとと ずれない",
+  "read.h2":"ふりがなでは なく いいかえに した わけ",
+  "read.why1":"「はいけい」と ふりがなを つけても いみは わかりません。よめる ことと わかる ことは べつです。だから <b>ひとが いいかえを かきます</b>。きかいで じどうへんかん は しません。",
+  "read.why2":"ふりがな モードも つくりません。ふりがなは ぎょうの あいだを おおきく くずすので、みため が 2かい かわる ことに なります。よめない なら ふりがなを たすより <b>ことばごと かえた ほうが かくじつ</b>です。",
+  "read.h3":"ひらがなを かく ときの きまり",
+  "read.r1b":"わかちがきに する。", "read.r1":"きょうかしょに あわせて ことばの くぎりで スペースを あけます。「きるせんを つくる」",
+  "read.r2b":"1つの ぶんは 20もじまで。", "read.r2":"ながい ぶんは よむのを やめて しまいます。",
+  "read.r3b":"カタカナは いみが つたわる ものだけ。", "read.r3":"「アクリル」「データ」は のこします。「オフセット」「レイヤー」は つかいません。",
+  "read.r4b":"たんいは カタカナで かく。", "read.r4":"「3mm」では なく「3ミリ」。",
+  "read.r5b":"うちけしの いいかたを さける。", "read.r5":"「ほぞんされて いません」では なく「まだ ほぞんして いません」。",
+  "read.last":"きりかえは がめんの みぎうえに いつも あります。せっていの おくには しまいません。1かい おすだけで かわり、つぎに ひらいた ときも おぼえて います。もじの かたちは Windows の きょうかしょたい などを つかいますが Mac と Linux には はいって いないので <b>ソフトと いっしょに いれて くばります</b>。どの パソコンでも おなじ よみやすさに する ためです。",
 
-  "read.h":     {ruby:"<ruby>同<rt>おな</rt></ruby>じ<ruby>画面<rt>がめん</rt></ruby>のまま、<ruby>文字<rt>もじ</rt></ruby>だけ<ruby>変<rt>か</rt></ruby>わる。", hira:"おなじ がめんの まま もじだけ かわる。"},
-  "read.lede":  {ruby:"つくまなラボは<ruby>初等部<rt>しょとうぶ</rt></ruby>から<ruby>先生<rt>せんせい</rt></ruby>まで<ruby>使<rt>つか</rt></ruby>う<ruby>場所<rt>ばしょ</rt></ruby>です。だから<b><ruby>子<rt>こ</rt></ruby>ども<ruby>用<rt>よう</rt></ruby>の<ruby>画面<rt>がめん</rt></ruby>を<ruby>別<rt>べつ</rt></ruby>に<ruby>作<rt>つく</rt></ruby>りません</b>。ボタンの<ruby>位置<rt>いち</rt></ruby>も<ruby>機能<rt>きのう</rt></ruby>も<ruby>同<rt>おな</rt></ruby>じまま、<ruby>文字<rt>もじ</rt></ruby>の<ruby>読<rt>よ</rt></ruby>みやすさだけを<ruby>切<rt>き</rt></ruby>りかえます。このページの<ruby>右上<rt>みぎうえ</rt></ruby>でもためせます。",
-                 hira:"つくまなラボは ちいさい こから せんせいまで つかう ばしょです。だから <b>こども ようの がめんを べつに つくりません</b>。ボタンの ばしょも おなじまま もじだけ かわります。この ページの みぎうえで ためして みてね。"},
-  "read.th1":   {ruby:"よみかた", hira:"よみかた"},
-  "read.th2":   {ruby:"ボタンの<ruby>文字<rt>もじ</rt></ruby>", hira:"ボタンの もじ"},
-  "read.th3":   {ruby:"だれ<ruby>向<rt>む</rt></ruby>け", hira:"だれが つかう"},
-  "read.who1":  {ruby:"<ruby>中学生<rt>ちゅうがくせい</rt></ruby>から<ruby>上<rt>うえ</rt></ruby>", hira:"ちゅうがくせいから うえ"},
-  "read.who2":  {ruby:"<ruby>小学校<rt>しょうがっこう</rt></ruby>の<ruby>中学年<rt>ちゅうがくねん</rt></ruby>から", hira:"しょうがっこうの 3ねんせいから"},
-  "read.who3":  {ruby:"<ruby>小学校<rt>しょうがっこう</rt></ruby>の<ruby>低学年<rt>ていがくねん</rt></ruby>", hira:"しょうがっこうの 1、2ねんせい"},
-  "read.note":  {ruby:"ひらがなは、ふりがなを<ruby>機械<rt>きかい</rt></ruby>で<ruby>振<rt>ふ</rt></ruby>っただけでは<ruby>通<rt>つう</rt></ruby>じません。「<ruby>背景<rt>はいけい</rt></ruby>」を「はいけい」と<ruby>読<rt>よ</rt></ruby>ませても<ruby>意味<rt>いみ</rt></ruby>は<ruby>分<rt>わ</rt></ruby>かりません。だから<b><ruby>言<rt>い</rt></ruby>いかえを<ruby>人<rt>ひと</rt></ruby>が<ruby>書<rt>か</rt></ruby>きます</b>。<ruby>書体<rt>しょたい</rt></ruby>も<ruby>丸<rt>まる</rt></ruby>ゴシックに<ruby>変<rt>か</rt></ruby>わり、<ruby>文字<rt>もじ</rt></ruby>が<ruby>少<rt>すこ</rt></ruby>し<ruby>大<rt>おお</rt></ruby>きくなります。",
-                 hira:"「はいけい」と ふりがなを つけても いみは わかりません。だから <b>ひとが いいかえを かきます</b>。もじの かたちも まるく なって すこし おおきく なります。"},
+  "cmp.h":"Inkscape で やって いた ことを みんなが つかえる ように。",
+  "cmp.lede":"いまは Inkscape を つかって います。とても つよい ソフトですが この さぎょうを するには てじゅんが おおくて <b>ことばも むずかしい</b>。ちいさい こには わたしにくい どうぐです。",
+  "cmp.a.h":"Inkscape で つくる とき",
+  "cmp.a.1":"えを よみこむ",
+  "cmp.a.2":"うしろを けす（べつの ソフトが いる）",
+  "cmp.a.3":"「ビットマップの トレース」を つかう",
+  "cmp.a.4":"「アウトセット」を なんかいも おす",
+  "cmp.a.5":"てんを うごかして かたちを なおす",
+  "cmp.a.6":"あなと だいざを じぶんで かく（おおきさを しらべる）",
+  "cmp.a.7":"SVG と PDF を べつべつに ほぞんする",
+  "cmp.a.f":"むずかしい ことばが おおい ／ ながさの たんいが ややこしい ／ おおきさは じぶんで しらべる",
+  "cmp.b.h":"kakomu で つくる とき",
+  "cmp.b.1":"えを いれる",
+  "cmp.b.2":"「うしろを けす」を おす",
+  "cmp.b.3":"「かこむ」を おす（3ミリ）",
+  "cmp.b.4":"てんを うごかして なおす",
+  "cmp.b.5":"あなや だいざを えらぶ（おおきさは はいって いる）",
+  "cmp.b.6":"「ほぞん」を おす（2つ いっしょ）",
+  "cmp.b.f":"ひらがなでも つかえる ／ ながさは ぜんぶ ミリ ／ おおきさは はいって いる",
+  "cmp.respect":"Inkscape は とても つよい ソフトです。kakomu は その かわりでは ありません。たくさん ある つくりかたの うち <b>この ひとつだけ</b>を とりだして ちいさい こでも つかえる ように なおした ものです。",
 
-  "out.h":      {ruby:"<ruby>切<rt>き</rt></ruby>る<ruby>機械<rt>きかい</rt></ruby>と、<ruby>刷<rt>す</rt></ruby>る<ruby>機械<rt>きかい</rt></ruby>に、そのまま<ruby>渡<rt>わた</rt></ruby>せる。", hira:"きる きかいと する きかいに そのまま わたせる。"},
-  "out.lede":   {ruby:"どこかに<ruby>送<rt>おく</rt></ruby>るのではなく、<b><ruby>同<rt>おな</rt></ruby>じ<ruby>部屋<rt>へや</rt></ruby>にある<ruby>機械<rt>きかい</rt></ruby>に<ruby>持<rt>も</rt></ruby>っていきます</b>。<ruby>書<rt>か</rt></ruby>き<ruby>出<rt>だ</rt></ruby>したあとに、どっちをどの<ruby>機械<rt>きかい</rt></ruby>に<ruby>渡<rt>わた</rt></ruby>すかも<ruby>画面<rt>がめん</rt></ruby>に<ruby>出<rt>で</rt></ruby>ます。",
-                 hira:"どこかに おくるのでは なく <b>おなじ へやに ある きかいに もって いきます</b>。どっちを どの きかいに わたすかも がめんに でます。"},
-  "out.a.w":    {ruby:"きる データ", hira:"きる データ"},
-  "out.a.t":    {ruby:"→ レーザー<ruby>加工機<rt>かこうき</rt></ruby>へ", hira:"→ レーザーかこうきへ"},
-  "out.a.1":    {ruby:"<ruby>長<rt>なが</rt></ruby>さはぜんぶミリ。<ruby>開<rt>ひら</rt></ruby>くソフトが<ruby>変<rt>か</rt></ruby>わっても<ruby>大<rt>おお</rt></ruby>きさが<ruby>変<rt>か</rt></ruby>わりません", hira:"ながさは ぜんぶ ミリ。ちがう ソフトで あけても おおきさは そのまま"},
-  "out.a.2":    {ruby:"<ruby>線<rt>せん</rt></ruby>はカットライン<ruby>用<rt>よう</rt></ruby>の<ruby>細<rt>ほそ</rt></ruby>さと<ruby>色<rt>いろ</rt></ruby>（マゼンタ）", hira:"せんは きる ための ほそさと いろ（ピンク）"},
-  "out.a.3":    {ruby:"<ruby>穴<rt>あな</rt></ruby>や<ruby>台座<rt>だいざ</rt></ruby>のスリットも<ruby>同<rt>おな</rt></ruby>じデータに<ruby>入<rt>はい</rt></ruby>ります", hira:"あなや だいざの みぞも おなじ データに はいります"},
-  "out.b.w":    {ruby:"する データ", hira:"する データ"},
-  "out.b.t":    {ruby:"→ UV プリンターへ", hira:"→ UVプリンターへ"},
-  "out.b.1":    {ruby:"<ruby>原寸<rt>げんすん</rt></ruby>のまま、600dpi のこまかさ", hira:"じっさいの おおきさの まま、こまかく"},
-  "out.b.2":    {ruby:"うしろを<ruby>消<rt>け</rt></ruby>した<ruby>透明<rt>とうめい</rt></ruby>なところは、<ruby>透明<rt>とうめい</rt></ruby>のまま<ruby>残<rt>のこ</rt></ruby>ります", hira:"けした ところは すきとおった まま のこります"},
-  "out.b.3":    {ruby:"ふちの<ruby>余白<rt>よはく</rt></ruby>（3 ミリ）も<ruby>入<rt>はい</rt></ruby>っています", hira:"ふちの よゆう（3ミリ）も はいって います"},
+  "out.h":"きる きかいと いんさつする きかいに そのまま わたせる。",
+  "out.lede":"どこかに おくるのでは なく <b>おなじ へやに ある きかいに もって いきます</b>。どっちを どの きかいに わたすかも がめんに でます。",
+  "out.a.w":"きる データ", "out.a.t":"→ レーザーかこうきへ",
+  "out.a.1":"ながさは ぜんぶ ミリ。ちがう ソフトで あけても おおきさは そのまま",
+  "out.a.2":"せんは きる ための ほそさと いろ（ピンク）",
+  "out.a.3":"あなや だいざの みぞも おなじ データに はいります",
+  "out.b.w":"いんさつする データ", "out.b.t":"→ UVプリンターへ",
+  "out.b.1":"じっさいの おおきさの まま こまかく",
+  "out.b.2":"けした ところは すきとおった まま のこります",
+  "out.b.3":"ふちの よゆう（3ミリ）も はいって います",
 
-  "chk.h":      {ruby:"<ruby>切<rt>き</rt></ruby>れない<ruby>形<rt>かたち</rt></ruby>は、<ruby>切<rt>き</rt></ruby>る<ruby>前<rt>まえ</rt></ruby>に<ruby>教<rt>おし</rt></ruby>えます。", hira:"きれない かたちは きる まえに おしえます。"},
-  "chk.lede":   {ruby:"<ruby>細<rt>ほそ</rt></ruby>すぎるところは<ruby>折<rt>お</rt></ruby>れます。<ruby>小<rt>ちい</rt></ruby>さすぎる<ruby>穴<rt>あな</rt></ruby>は<ruby>開<rt>あ</rt></ruby>きません。<ruby>失敗<rt>しっぱい</rt></ruby>したアクリル<ruby>板<rt>いた</rt></ruby>はもどってこないので、<b><ruby>切<rt>き</rt></ruby>る<ruby>前<rt>まえ</rt></ruby>に<ruby>気<rt>き</rt></ruby>づけること</b>を<ruby>大事<rt>だいじ</rt></ruby>にしています。だめな<ruby>理由<rt>りゆう</rt></ruby>と、どう<ruby>直<rt>なお</rt></ruby>すかを<ruby>必<rt>かなら</rt></ruby>ずいっしょに<ruby>出<rt>だ</rt></ruby>します。",
-                 hira:"ほそすぎる ところは おれます。ちいさすぎる あなは あきません。しっぱいした アクリルは もどって こないので <b>きる まえに きづける こと</b>を だいじに して います。どうして だめかと どう なおすかを いっしょに おしえます。"},
-  "chk.th1":    {ruby:"しらべること", hira:"しらべる こと"},
-  "chk.th2":    {ruby:"きじゅん", hira:"きじゅん"},
-  "chk.th3":    {ruby:"<ruby>出<rt>で</rt></ruby>るメッセージ（ひらがな）", hira:"でて くる ことば（ひらがな）"},
-  "chk.r1":     {ruby:"<ruby>細<rt>ほそ</rt></ruby>さ", hira:"ほそさ"},
-  "chk.r2":     {ruby:"<ruby>穴<rt>あな</rt></ruby>の<ruby>大<rt>おお</rt></ruby>きさ", hira:"あなの おおきさ"},
-  "chk.r3":     {ruby:"<ruby>絵<rt>え</rt></ruby>のこまかさ", hira:"えの こまかさ"},
+  "chk.h":"きれない かたちは きる まえに おしえます。",
+  "chk.lede":"ほそすぎる ところは おれます。ちいさすぎる あなは あきません。しっぱいした アクリルは もどって こないので <b>きる まえに きづける こと</b>を だいじに して います。どうして だめかと どう なおすかを いっしょに おしえます。",
+  "chk.th1":"しらべる こと", "chk.th2":"きじゅん", "chk.th3":"でて くる ことば（ひらがな）",
+  "chk.r1":"ほそさ", "chk.r2":"あなの おおきさ", "chk.r3":"えの こまかさ",
 
-  "pl.h":       {ruby:"<ruby>青学<rt>あおがく</rt></ruby>つくまなラボ", hira:"あおがく つくまなラボ"},
-  "pl.lede":    {ruby:"「<b><ruby>創<rt>つく</rt></ruby>ることで<ruby>学<rt>まな</rt></ruby>ぶ</b>」<ruby>場所<rt>ばしょ</rt></ruby>として、<ruby>世代<rt>せだい</rt></ruby>や<ruby>分野<rt>ぶんや</rt></ruby>の<ruby>壁<rt>かべ</rt></ruby>を<ruby>取<rt>と</rt></ruby>りはらってものづくりに<ruby>取<rt>と</rt></ruby>り<ruby>組<rt>く</rt></ruby>むためのメイカースペースです。3D プリンターとレーザー<ruby>加工機<rt>かこうき</rt></ruby>があります。<ruby>青山学院<rt>あおやまがくいん</rt></ruby>の<ruby>関係者<rt>かんけいしゃ</rt></ruby>なら、<ruby>開<rt>あ</rt></ruby>いている<ruby>時間<rt>じかん</rt></ruby>は<ruby>予約<rt>よやく</rt></ruby>なしで<ruby>使<rt>つか</rt></ruby>えます。",
-                 hira:"「<b>つくる ことで まなぶ</b>」ばしょです。としや せんもんの ちがいを こえて ものづくりを する ところで、3Dプリンターと レーザーかこうきが あります。あおやまがくいんの ひとなら あいて いる じかんは よやく なしで つかえます。"},
-
-  "rd.h":       {ruby:"まだ<ruby>使<rt>つか</rt></ruby>えません。<ruby>設計<rt>せっけい</rt></ruby>しているところです。", hira:"まだ つかえません。いま かんがえて いる ところです。"},
-  "rd.lede":    {ruby:"<ruby>今<rt>いま</rt></ruby>あるのは、<ruby>設計<rt>せっけい</rt></ruby>の<ruby>文書<rt>ぶんしょ</rt></ruby>とこのページだけです。<ruby>下<rt>した</rt></ruby>の<ruby>予定<rt>よてい</rt></ruby>は 1 <ruby>人<rt>にん</rt></ruby>でずっと<ruby>作<rt>つく</rt></ruby>りつづけた<ruby>場合<rt>ばあい</rt></ruby>の<ruby>目安<rt>めやす</rt></ruby>で、それぞれの<ruby>区切<rt>くぎ</rt></ruby>りに<b>「ここまでで<ruby>動<rt>うご</rt></ruby>くもの」</b>を<ruby>決<rt>き</rt></ruby>めてあります。",
-                 hira:"いま あるのは かんがえを かいた ぶんしょうと この ページだけです。したの よていは 1にんで ずっと つくった ばあいの めやすです。"},
-  "rd.0":{ruby:"きほん",hira:"きほん"}, "rd.1":{ruby:"かきだし",hira:"ほぞん"},
-  "rd.2":{ruby:"せんの へんしゅう",hira:"せんを なおす"}, "rd.3":{ruby:"うしろを けす",hira:"うしろを けす"},
-  "rd.4":{ruby:"かこむ",hira:"かこむ"}, "rd.5":{ruby:"よみやすさ・ぶひん",hira:"よみやすさ・ぶひん"},
-  "rd.6":{ruby:"くばる",hira:"くばる"},
-  "rd.note":    {ruby:"ぜんぶで 17 しゅう。M5 では、<ruby>実際<rt>じっさい</rt></ruby>につくまなラボで<ruby>初等部<rt>しょとうぶ</rt></ruby>の<ruby>子<rt>こ</rt></ruby>に<ruby>通<rt>とお</rt></ruby>しで<ruby>作<rt>つく</rt></ruby>ってもらい、つまったところをそのまま<ruby>直<rt>なお</rt></ruby>すところまでを<ruby>含<rt>ふく</rt></ruby>みます。",
-                 hira:"ぜんぶで 17しゅう。M5 では ほんとうに つくまなラボで ちいさい こに つくって もらって つまった ところを なおします。"},
+  "rd.h":"まだ つかえません。いま かんがえて いる ところです。",
+  "rd.lede":"いま あるのは かんがえを かいた ぶんしょうと この ページだけです。したの よていは 1にんで ずっと つくった ばあいの めやすです。",
+  "rd.0":"きほん", "rd.1":"ほぞん", "rd.2":"せんを なおす", "rd.3":"うしろを けす",
+  "rd.4":"かこむ", "rd.5":"よみやすさ・ぶひん", "rd.6":"くばる",
+  "rd.note":"ぜんぶで 17しゅう。M5 では ほんとうに しょうがくせいに つくって もらって つまった ところを なおします。",
 };
 
 (function () {
@@ -685,10 +639,8 @@ const V = {
 
   function apply(mode) {
     nodes.forEach(el => {
-      const key = el.dataset.t;
-      const v = V[key];
-      if (mode === 'kanji' || !v || !v[mode]) el.innerHTML = kanji.get(el);
-      else el.innerHTML = v[mode];
+      const h = H[el.dataset.t];
+      el.innerHTML = (mode === 'hira' && h) ? h : kanji.get(el);
     });
     root.dataset.read = mode;
     document.querySelectorAll('[data-read-btn]').forEach(b => {
@@ -703,8 +655,7 @@ const V = {
 
   let saved = 'kanji';
   try { saved = localStorage.getItem('kakomu.read') || 'kanji'; } catch (e) { /* 読めなくても動く */ }
-  if (saved !== 'kanji') apply(saved);
-  else root.dataset.read = 'kanji';
+  if (saved === 'hira') apply('hira'); else root.dataset.read = 'kanji';
 })();
 </script>
 
