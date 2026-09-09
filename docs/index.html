@@ -536,14 +536,17 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
       </div>
       <div class="plat main">
         <h3 data-t="install.arch.t">omarchy / Arch Linux</h3>
-        <p data-t="install.arch.d">先に依存パッケージを入れてください。ファイルを開くダイアログには、<b>xdg-desktop-portal が 2 つとも</b>必要です。片方だけだとダイアログが出ません。</p>
-        <code class="code">sudo pacman -S --needed \
-  webkit2gtk-4.1 gtk3 libappindicator-gtk3 librsvg \
-  xdg-desktop-portal-hyprland xdg-desktop-portal-gtk fuse2
-
-chmod +x kakomu_*.AppImage
-./kakomu_*.AppImage</code>
+        <p data-t="install.arch.d">AUR パッケージを使うのがいちばん簡単です。<b>依存が一緒に入る</b>ので、ファイルダイアログが出ないといった落とし穴を踏みません。</p>
+        <code class="code">yay -S kakomu-bin</code>
+        <p style="margin-top:12px" data-t="install.arch.d2">AUR への登録はまだです。それまでは、リポジトリから直接ビルドできます。やることは同じで、依存も一緒に入ります。</p>
+        <code class="code">git clone https://github.com/tukumanalab/kakomu.git
+cd kakomu/packaging/aur/kakomu-bin
+makepkg -si</code>
       </div>
+    </div>
+
+    <div class="warnbox" style="margin-bottom:14px">
+      <p data-t="install.portal">AppImage を手で入れる場合は、依存を自分で揃えてください。とくに<b>ファイルを開くダイアログ</b>は <code>xdg-desktop-portal</code> と <code>xdg-desktop-portal-gtk</code> が要ります（ダイアログの実体を持っているのが <code>-gtk</code> です）。入れ忘れると「絵を入れる」を押しても何も起きません。Hyprland では <code>xdg-desktop-portal-hyprland</code> も入れておきます。</p>
     </div>
 
     <div class="warnbox">
@@ -689,7 +692,9 @@ const H = {
   "install.linux.t":"Linux（ふつうの）",
   "install.linux.d":"AppImage に じっこうの きょかを つけて うごかします。",
   "install.arch.t":"omarchy / Arch Linux",
-  "install.arch.d":"さきに ひつような パッケージを いれてね。ファイルを ひらく ダイアログには <b>xdg-desktop-portal が 2つとも</b> ひつようです。かたほうだけだと ダイアログが でません。",
+  "install.arch.d":"AUR の パッケージを つかうのが いちばん かんたんです。<b>ひつような ものが いっしょに はいる</b>ので うまく うごかない ことが へります。",
+  "install.arch.d2":"AUR への とうろくは まだです。それまでは リポジトリから ちょくせつ ビルド できます。やる ことは おなじで ひつような ものも いっしょに はいります。",
+  "install.portal":"AppImage を てで いれる ばあいは ひつような ものを じぶんで そろえてね。とくに <b>ファイルを ひらく ダイアログ</b>には <code>xdg-desktop-portal</code> と <code>xdg-desktop-portal-gtk</code> が いります。いれ わすれると「えを いれる」を おしても なにも おきません。",
   "install.dmabuf":"omarchy で <b>がめんが まっしろに なったり くずれたり する とき</b>は WebKitGTK の DMABUF レンダラを きってね。Nvidia の ドライバや いちぶの かんきょうで おきます。<br><code>WEBKIT_DISABLE_DMABUF_RENDERER=1 ./kakomu_*.AppImage</code>",
   "install.sign":"どの OS でも 1かいめに ちゅういが でます。まだ しょめいを いれて いない ためで うごきには もんだい ありません。AUR の パッケージ（kakomu-bin）も よてい して います。",
   "rd.h":"まだ つかえません。いま かんがえて いる ところです。",

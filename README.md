@@ -44,25 +44,43 @@ chmod +x kakomu_*.AppImage
 
 ### omarchy（Arch Linux + Hyprland）
 
-kakomu は Wayland / Hyprland を主要な対応対象にしています。Arch では
-**依存パッケージを先に入れてください**。
+kakomu は Wayland / Hyprland を主要な対応対象にしています。
+Arch では **AUR パッケージを使うのがいちばん簡単**です。依存パッケージが一緒に入るので、
+下で説明する落とし穴を踏みません。
 
 ```sh
-sudo pacman -S --needed   webkit2gtk-4.1 gtk3 libappindicator-gtk3 librsvg   xdg-desktop-portal-hyprland xdg-desktop-portal-gtk fuse2
+yay -S kakomu-bin
+```
+
+> AUR への登録はまだです。それまでは、このリポジトリから直接ビルドできます。
+> やることは同じで、依存も一緒に入ります。
+>
+> ```sh
+> git clone https://github.com/tukumanalab/kakomu.git
+> cd kakomu/packaging/aur/kakomu-bin
+> makepkg -si
+> ```
+
+#### AppImage を手で入れる場合
+
+依存を自分で揃える必要があります。
+
+```sh
+sudo pacman -S --needed \
+  webkit2gtk-4.1 gtk3 librsvg \
+  xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-hyprland \
+  fuse2
+
+chmod +x kakomu_*.AppImage
+./kakomu_*.AppImage
 ```
 
 | パッケージ | なぜ要るか |
 |---|---|
-| `webkit2gtk-4.1` `gtk3` `librsvg` | 画面の描画。これが無いと起動しません |
-| `xdg-desktop-portal-hyprland` **と** `xdg-desktop-portal-gtk` | ファイルを開くダイアログ。Hyprland では**両方**必要です。片方だけだとダイアログが出ません |
+| `webkit2gtk-4.1` `gtk3` `librsvg` | 画面の描画。無いと起動しません |
+| `xdg-desktop-portal` **と** `xdg-desktop-portal-gtk` | ファイルを開くダイアログ。kakomu は portal 越しにダイアログを出し、**その実体を持っているのが `-gtk`** です。入れ忘れると「絵を入れる」を押しても何も起きません |
+| `xdg-desktop-portal-hyprland` | Hyprland で portal を正しく振り分けるため。omarchy では入れておきます |
 | `fuse2` | AppImage の実行に要ります |
-
-そのうえで実行します。
-
-```sh
-chmod +x kakomu_*.AppImage
-./kakomu_*.AppImage
-```
 
 **画面が真っ白になる／描画が崩れるとき**は、WebKitGTK の DMABUF レンダラを切ってください。
 Nvidia ドライバや一部のコンポジタで起きます。
@@ -77,18 +95,16 @@ WEBKIT_DISABLE_DMABUF_RENDERER=1 ./kakomu_*.AppImage
 WEBKIT_DISABLE_DMABUF_RENDERER=1
 ```
 
-#### ソースから入れる（Arch）
+#### ソースからビルドする（Arch）
 
 ```sh
-sudo pacman -S --needed base-devel rust nodejs pnpm   webkit2gtk-4.1 gtk3 libappindicator-gtk3 librsvg   xdg-desktop-portal-hyprland xdg-desktop-portal-gtk
-
-git clone https://github.com/tukumanalab/kakomu.git
-cd kakomu
-pnpm install
-pnpm tauri build          # src-tauri/target/release/bundle/ に出ます
+cd kakomu/packaging/aur/kakomu
+makepkg -si
 ```
 
-AUR パッケージ（`kakomu-bin`）は M6 で用意する予定です。
+パッケージの定義は [`packaging/aur/`](packaging/aur/) にあります。
+`depends` は Cargo の機能構成から決めたもので、**実機ではまだ確かめていません**。
+起動しない場合は `ldd /usr/bin/kakomu | grep 'not found'` で不足を調べて追加してください。
 
 ## 動かす
 

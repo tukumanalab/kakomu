@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=kakomu
+Comment=アクリルスタンド・アクリルキーホルダーを作る
+Comment[en]=Make acrylic stands and keychains
+Exec=kakomu %f
+Icon=kakomu
+Terminal=false
+Categories=Graphics;VectorGraphics;2DGraphics;
+MimeType=image/png;image/jpeg;image/webp;image/tiff;
+StartupWMClass=kakomu

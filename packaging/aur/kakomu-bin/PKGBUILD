@@ -1,0 +1,40 @@
+# Maintainer: Junya Ishihara <junya@champierre.com>
+
+# ビルド済みの binary を Releases から取ってきて入れる版。
+# ソースからビルドする版は AUR の kakomu にある。
+pkgname=kakomu-bin
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="アクリルスタンド・アクリルキーホルダーを作るためのベクターエディタ"
+arch=('x86_64')
+url="https://github.com/tukumanalab/kakomu"
+license=('MIT')
+
+# 画面の描画に要るもの。これが無いと起動しない
+depends=(
+  'webkit2gtk-4.1'
+  'gtk3'
+  'librsvg'
+  # ファイルを開くダイアログ。Tauri は xdg-desktop-portal 越しに出す。
+  # FileChooser を実装しているのは -gtk なので、これが実体として要る
+  'xdg-desktop-portal'
+  'xdg-desktop-portal-gtk'
+)
+optdepends=(
+  'xdg-desktop-portal-hyprland: Hyprland で portal を正しく振り分けるため（omarchy では入れておく）'
+)
+provides=('kakomu')
+conflicts=('kakomu')
+options=('!strip' '!debug')
+
+source=("${pkgname}-${pkgver}.deb::${url}/releases/download/v${pkgver}/kakomu_${pkgver}_amd64.deb")
+sha256sums=('0000000000000000000000000000000000000000000000000000000000000000')
+
+package() {
+  # deb は ar 書庫。中身の data.tar.* をそのまま展開すれば所定の場所に収まる
+  bsdtar -xf "${pkgname}-${pkgver}.deb" -C "${srcdir}"
+  bsdtar -xf "${srcdir}"/data.tar.* -C "${pkgdir}"
+
+  install -Dm644 "${pkgdir}/usr/share/doc/kakomu/LICENSE" \
+    "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE" 2>/dev/null || true
+}
