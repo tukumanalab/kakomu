@@ -11,6 +11,7 @@
 <meta property="og:description" content="絵を入れて、うしろを消して、まわりを囲む線をつくる。切る線は SVG、絵は PDF で出せます。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://tukumanalab.github.io/kakomu/">
+<meta property="og:image" content="https://tukumanalab.github.io/kakomu/images/overview.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -184,6 +185,15 @@ ol.steps span{color:var(--ink-soft); font-size:calc(var(--fs) - 1px)}
 .ex ul{margin:0; padding:14px 20px 18px 34px; font-size:calc(var(--fs) - 2.5px); color:var(--ink-soft)}
 .ex li{margin-bottom:5px}
 
+/* screenshot */
+figure.shot{margin:0 0 22px}
+figure.shot img{display:block; width:100%; height:auto; border:1px solid var(--line); border-radius:6px; box-shadow:0 6px 28px rgba(0,0,0,.10)}
+figure.shot figcaption{margin-top:10px; font-size:calc(var(--fs) - 2.5px); color:var(--muted); line-height:1.8}
+figure.shot.narrow{max-width:440px}
+figure.shot.narrow img{border-radius:4px}
+.shotrow{display:grid; grid-template-columns:minmax(0,1fr) 440px; gap:28px; align-items:start; margin-bottom:22px}
+@media (max-width:900px){ .shotrow{grid-template-columns:minmax(0,1fr)} .shotrow figure.shot.narrow{max-width:100%} }
+
 /* install */
 .plats{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-bottom:24px}
 .plat{border:1px solid var(--line); background:var(--surface); padding:18px 20px 20px}
@@ -239,6 +249,7 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
         </div>
       </div>
       <nav class="topnav">
+        <a href="#screen">がめん</a>
         <a href="#how" class="hide-sm">つくりかた</a>
         <a href="#read">よみやすさ</a>
         <a href="#output" class="hide-sm">できるデータ</a>
@@ -309,6 +320,19 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
   </div>
 </div>
 
+<!-- ================= SCREEN ================= -->
+<section id="screen">
+  <div class="wrap">
+    <p class="eyebrow">がめん</p>
+    <h2 data-t="screen.h">これが、うごいているところです。</h2>
+    <p class="lede" data-t="screen.lede">絵を入れて、背景を消して、そのまわりを囲んだところ。<b>長さの表示はぜんぶミリ</b>で、ピクセルはどこにも出てきません。</p>
+    <figure class="shot">
+      <img src="images/overview.png" alt="kakomu の画面。絵を置き、背景を消し、その 3ミリ外側に切る線ができている" loading="lazy" width="1600" height="1038">
+      <figcaption data-t="screen.cap">左が道具、まん中が板、右が設定とレイヤーとチェック。下に「板の大きさ 80 × 120 ミリ」「倍率」「絵の細かさ」が出ています。</figcaption>
+    </figure>
+  </div>
+</section>
+
 <!-- ================= HOW ================= -->
 <section id="how">
   <div class="wrap">
@@ -339,6 +363,17 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
           <circle cx="130" cy="30" r="6" fill="none" stroke="var(--cut)" stroke-width="2"/>
         </svg>
         <figcaption class="cap">STEP 03<b data-t="fig.3">かこむ</b></figcaption>
+      </figure>
+    </div>
+
+    <div class="shotrow">
+      <figure class="shot">
+        <img src="images/matting.png" alt="背景を消しているところ。進捗と「画像を作っています」の表示" loading="lazy" width="1400" height="908">
+        <figcaption data-t="shot.matting">背景を消しているところ。いま何をしているかを必ず出します。だまって固まっていると「こわれた」と思ってしまうからです。</figcaption>
+      </figure>
+      <figure class="shot narrow">
+        <img src="images/cutline-closeup.png" alt="背景が消えた絵と、その 3ミリ外側を回るマゼンタの切る線" loading="lazy" width="560" height="560">
+        <figcaption data-t="shot.cutline">できた切る線。絵の輪郭から 3ミリ外側を回っています。角が丸いのは、距離で外側を測っているからです。</figcaption>
       </figure>
     </div>
 
@@ -683,6 +718,11 @@ const H = {
   "chk.th1":"しらべる こと", "chk.th2":"きじゅん", "chk.th3":"でて くる ことば（ひらがな）",
   "chk.r1":"ほそさ", "chk.r2":"あなの おおきさ", "chk.r3":"えの こまかさ",
 
+  "screen.h":"これが うごいて いる ところです。",
+  "screen.lede":"えを いれて うしろを けして まわりを かこんだ ところ。<b>ながさは ぜんぶ ミリ</b>で、ピクセルは どこにも でて きません。",
+  "screen.cap":"ひだりが どうぐ、まんなかが いた、みぎが せっていと かさねと しらべた けっか。したに「いたの おおきさ 80 × 120 ミリ」が でて います。",
+  "shot.matting":"うしろを けして いる ところ。いま なにを して いるかを かならず だします。だまって いると「こわれた」と おもって しまうからです。",
+  "shot.cutline":"できた きる せん。えの ふちから 3ミリ そとがわを まわって います。かどが まるいのは きょりで そとがわを はかって いるからです。",
   "install.h":"Windows でも Mac でも Linux でも うごきます。",
   "install.lede":"<b><a href=\"https://github.com/tukumanalab/kakomu/releases\" style=\"color:var(--cut)\">Releases から ダウンロード できます</a></b>。omarchy（Arch + Hyprland）も おもな たいしょうです。",
   "install.win.t":"Windows",
