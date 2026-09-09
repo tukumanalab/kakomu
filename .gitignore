@@ -30,3 +30,9 @@ src-tauri/*.p12
 
 # app artifacts
 *.kkm.autosave
+
+# モバイルは対象外。tauri icon が生成するぶんは追跡しない
+src-tauri/icons/android/
+src-tauri/icons/ios/
+src-tauri/icons/Square*.png
+src-tauri/icons/StoreLogo.png

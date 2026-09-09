@@ -1,0 +1,547 @@
+/*
+ * kakomu の外観。
+ *
+ * ひらがなモードで変わるのは 書体 / 文字サイズ / 行間 だけ。
+ * 画面の構造・ボタンの位置は変えない（SPEC 3.2）。
+ */
+
+:root {
+  --paper: #f5f3f6;
+  --surface: #fdfcfe;
+  --surface-2: #eeeaf1;
+  --sunken: #e6e1eb;
+  --ink: #1a171e;
+  --ink-soft: #453f4e;
+  --muted: #6e687a;
+  --line: #ddd7e3;
+  --line-soft: #e9e4ee;
+
+  --cut: #c700c7;
+  --cut-tint: #f8e7f8;
+  --print: #0f7d8c;
+  --print-tint: #deeff1;
+  --warn: #8a5c10;
+  --warn-tint: #f4ebd9;
+  --stop: #a5322a;
+  --stop-tint: #f7e4e2;
+
+  --f-gothic: 'Zen Kaku Gothic New', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, system-ui,
+    sans-serif;
+  --f-round: 'UD デジタル教科書体 NK-R', 'BIZ UDGothic', 'Zen Maru Gothic',
+    'Hiragino Maru Gothic ProN', var(--f-gothic);
+  --f-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --f-body: var(--f-gothic);
+  --fs: 14px;
+  --lh: 1.7;
+
+  --rail: 84px;
+  --side: 264px;
+  --bar: 44px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #131017;
+    --surface: #1b1722;
+    --surface-2: #251f2e;
+    --sunken: #0e0c12;
+    --ink: #efeaf3;
+    --ink-soft: #c7bfd1;
+    --muted: #958ca3;
+    --line: #342d3e;
+    --line-soft: #272130;
+    --cut: #f45cf4;
+    --cut-tint: #2b1730;
+    --print: #4ebac6;
+    --print-tint: #12292d;
+    --warn: #d6a44a;
+    --warn-tint: #2b2416;
+    --stop: #e0776b;
+    --stop-tint: #2e1a19;
+  }
+}
+
+/* ひらがなモード */
+html[data-read='hira'] {
+  --f-body: var(--f-round);
+  --fs: 16px;
+  --lh: 2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: var(--fs);
+  line-height: var(--lh);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cut);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ shell */
+
+.app {
+  display: grid;
+  grid-template-rows: var(--bar) 1fr 26px;
+  grid-template-columns: var(--rail) 1fr var(--side);
+  grid-template-areas:
+    'top top top'
+    'rail canvas side'
+    'status status status';
+  height: 100%;
+}
+
+/* ------------------------------------------------------------------ topbar */
+
+.topbar {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  font-family: var(--f-gothic);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  font-size: 16px;
+  margin-right: 6px;
+}
+.brand i {
+  font-style: normal;
+  color: var(--cut);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.tbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.tbtn:hover:not(:disabled) {
+  border-color: var(--cut);
+  color: var(--cut);
+}
+.tbtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.tbtn.primary {
+  background: var(--cut);
+  border-color: var(--cut);
+  color: #fff;
+  font-weight: 700;
+}
+.tbtn.primary:hover:not(:disabled) {
+  opacity: 0.88;
+  color: #fff;
+}
+
+/* よみかたの切りかえ。常に画面右上に置き、設定の奥に隠さない */
+.reader {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.reader-label {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.seg {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.seg button {
+  min-height: 30px;
+  padding: 4px 12px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+.seg button:last-child {
+  border-right: 0;
+}
+.seg button[aria-pressed='true'] {
+  background: var(--cut);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------------ rail */
+
+.rail {
+  grid-area: rail;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 8px;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+}
+
+.tool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 9px 4px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 11px;
+  min-height: 56px;
+}
+.tool:hover {
+  background: var(--surface-2);
+}
+.tool[aria-pressed='true'] {
+  background: var(--cut-tint);
+  border-color: var(--cut);
+  color: var(--cut);
+  font-weight: 700;
+}
+.tool:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.tool .glyph {
+  font-size: 19px;
+  line-height: 1;
+}
+
+/* ------------------------------------------------------------------ canvas */
+
+.canvas-wrap {
+  grid-area: canvas;
+  position: relative;
+  overflow: hidden;
+  background: var(--sunken);
+}
+
+.canvas-wrap svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.canvas-wrap.panning {
+  cursor: grabbing;
+}
+
+/* 空のときの入口。ここから始めることを迷わせない */
+.empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  pointer-events: none;
+  text-align: center;
+  padding: 24px;
+}
+.empty .box {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 48px;
+  border: 2px dashed var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  max-width: 460px;
+}
+.empty.over .box {
+  border-color: var(--cut);
+  background: var(--cut-tint);
+}
+.empty h2 {
+  margin: 0;
+  font-size: calc(var(--fs) + 4px);
+  font-weight: 700;
+}
+.empty p {
+  margin: 0;
+  color: var(--muted);
+  font-size: calc(var(--fs) - 1px);
+}
+.empty .big {
+  min-height: 48px;
+  padding: 12px 26px;
+  font-size: calc(var(--fs) + 2px);
+  font-weight: 700;
+  border-radius: 4px;
+  border: 1px solid var(--cut);
+  background: var(--cut);
+  color: #fff;
+}
+
+/* つぎにやることの案内 */
+.next-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cut);
+  background: var(--cut-tint);
+  color: var(--cut);
+  font-size: calc(var(--fs) - 1px);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ side */
+
+.side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  overflow-y: auto;
+}
+
+.panel {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 14px 16px;
+}
+.panel > h3 {
+  margin: 0 0 10px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.empty-note {
+  color: var(--muted);
+  font-size: calc(var(--fs) - 1px);
+}
+
+/* 数値入力（すべて mm / 度） */
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.field label {
+  font-size: 11px;
+  color: var(--muted);
+}
+.field .input {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--paper);
+  padding-right: 7px;
+}
+.field input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--f-mono);
+  font-size: 13px;
+  padding: 7px 8px;
+  text-align: right;
+}
+.field input:focus {
+  outline: none;
+}
+.field .input:focus-within {
+  border-color: var(--cut);
+}
+.field .unit {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: calc(var(--fs) - 1px);
+  color: var(--ink-soft);
+}
+.check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--cut);
+}
+
+/* かさね */
+.layer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+}
+.layer:hover {
+  background: var(--surface-2);
+}
+.layer .name {
+  flex: 1;
+  font-size: calc(var(--fs) - 1px);
+}
+.layer .count {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.layer .role {
+  width: 3px;
+  height: 18px;
+  border-radius: 2px;
+  flex: none;
+}
+.layer .role.artwork {
+  background: var(--print);
+}
+.layer .role.cutline {
+  background: var(--cut);
+}
+.layer .role.parts {
+  background: var(--muted);
+}
+.layer .role.guide {
+  background: var(--line);
+}
+.icon-btn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 3px 5px;
+  border-radius: 3px;
+  font-size: 13px;
+  line-height: 1;
+}
+.icon-btn:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.icon-btn.off {
+  opacity: 0.35;
+}
+
+/* しらべた結果 */
+.issue {
+  display: flex;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 3px;
+  font-size: calc(var(--fs) - 1.5px);
+  line-height: 1.65;
+  margin-bottom: 7px;
+}
+.issue.warn {
+  background: var(--warn-tint);
+  color: var(--warn);
+}
+.issue.error {
+  background: var(--stop-tint);
+  color: var(--stop);
+}
+.issue .mark {
+  flex: none;
+  font-weight: 700;
+}
+.ok-note {
+  color: var(--print);
+  font-size: calc(var(--fs) - 1px);
+}
+
+/* ------------------------------------------------------------------ status */
+
+.status {
+  grid-area: status;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 12px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+.status .k {
+  letter-spacing: 0.06em;
+}
+.status .v {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.status .v.warn {
+  color: var(--warn);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
