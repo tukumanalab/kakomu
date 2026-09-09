@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+target/
+src-tauri/target/
+src-tauri/gen/
+
+# ONNX models (downloaded at first use / too large for git)
+src-tauri/models/*.onnx
+
+# editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# local config & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.tauri/
+src-tauri/*.p12
+
+# app artifacts
+*.kkm.autosave

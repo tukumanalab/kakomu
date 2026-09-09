@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kakomu — アクスタ・アクキーの入稿データを作るベクターエディタ</title>
+<meta name="description" content="画像を囲むカットラインを自動生成し、SVG と UV プリンタ向け PDF に書き出す、アクリルグッズ制作専用のベクターエディタ。Windows / macOS / Linux 対応。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%E2%9C%82%EF%B8%8F</text></svg>">
+
+<meta property="og:title" content="kakomu — アクスタ・アクキーの入稿データを作るベクターエディタ">
+<meta property="og:description" content="画像を囲むカットラインを自動生成し、SVG と UV プリンタ向け PDF に書き出す。Windows / macOS / Linux 対応。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tukumanalab.github.io/kakomu/">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --paper:#F5F3F6; --surface:#FDFCFE; --surface-2:#EEEAF1;
+  --ink:#1A171E; --ink-soft:#453F4E; --muted:#6E687A;
+  --line:#DDD7E3; --line-soft:#E9E4EE;
+  --grid:rgba(26,23,30,.055);
+  --cut:#C700C7; --cut-tint:#F8E7F8;
+  --print:#0F7D8C; --print-tint:#DEEFF1;
+  --warn:#8A5C10; --warn-tint:#F4EBD9;
+  --f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#131017; --surface:#1B1722; --surface-2:#251F2E;
+    --ink:#EFEAF3; --ink-soft:#C7BFD1; --muted:#958CA3;
+    --line:#342D3E; --line-soft:#272130;
+    --grid:rgba(239,234,243,.045);
+    --cut:#F45CF4; --cut-tint:#2B1730;
+    --print:#4EBAC6; --print-tint:#12292D;
+    --warn:#D6A44A; --warn-tint:#2B2416;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131017; --surface:#1B1722; --surface-2:#251F2E;
+  --ink:#EFEAF3; --ink-soft:#C7BFD1; --muted:#958CA3;
+  --line:#342D3E; --line-soft:#272130;
+  --grid:rgba(239,234,243,.045);
+  --cut:#F45CF4; --cut-tint:#2B1730;
+  --print:#4EBAC6; --print-tint:#12292D;
+  --warn:#D6A44A; --warn-tint:#2B2416;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--f-body); font-size:16px; line-height:1.85;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--cut); outline-offset:3px}
+
+.wrap{max-width:1120px; margin:0 auto; padding:0 28px}
+.mono{font-family:var(--f-mono)}
+
+/* ---------------- top bar ---------------- */
+.topbar{
+  border-bottom:1px solid var(--line);
+  position:sticky; top:0; z-index:10;
+  background:color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter:blur(10px);
+}
+.topbar .wrap{display:flex; align-items:center; justify-content:space-between; height:56px; gap:20px}
+.brand{font-weight:900; font-size:19px; letter-spacing:-.02em; text-decoration:none}
+.brand i{font-style:normal; color:var(--cut)}
+.topnav{display:flex; gap:22px; font-family:var(--f-mono); font-size:12px}
+.topnav a{color:var(--ink-soft); text-decoration:none}
+.topnav a:hover{color:var(--cut)}
+@media (max-width:700px){ .topnav a.hide-sm{display:none} }
+
+/* ---------------- hero ---------------- */
+.hero{
+  border-bottom:1px solid var(--line);
+  background-image:
+    repeating-linear-gradient(to right, var(--grid) 0 1px, transparent 1px 40px),
+    repeating-linear-gradient(to bottom, var(--grid) 0 1px, transparent 1px 40px);
+  background-position:center top;
+}
+.hero .wrap{
+  display:grid; grid-template-columns:minmax(0,1fr) 400px; gap:64px;
+  align-items:center; padding-top:72px; padding-bottom:72px;
+}
+.status{
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:24px;
+  font-family:var(--f-mono); font-size:11px; font-weight:500; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--warn);
+  background:var(--warn-tint); border:1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  padding:4px 11px; border-radius:2px;
+}
+.status .dot{width:6px; height:6px; border-radius:50%; background:var(--warn); flex:none}
+h1{
+  font-size:clamp(58px,10vw,116px); font-weight:900; line-height:.9;
+  letter-spacing:-.04em; margin:0 0 10px;
+}
+.kanji{
+  font-family:var(--f-mono); font-size:12px; color:var(--muted);
+  letter-spacing:.06em; margin:0 0 26px;
+}
+.kanji b{color:var(--cut); font-weight:500}
+.tagline{
+  font-size:clamp(19px,2.4vw,25px); line-height:1.6; font-weight:700;
+  letter-spacing:-.01em; margin:0 0 18px; max-width:20ch; text-wrap:balance;
+}
+.sub{font-size:15.5px; color:var(--ink-soft); margin:0 0 30px; max-width:44ch}
+.ctas{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
+.btn{
+  display:inline-flex; align-items:center; gap:9px;
+  font-family:var(--f-mono); font-size:13px; font-weight:500; letter-spacing:.02em;
+  padding:11px 20px; text-decoration:none; border:1px solid var(--ink);
+  background:var(--ink); color:var(--paper); transition:opacity .15s;
+}
+.btn:hover{opacity:.82}
+.btn.ghost{background:transparent; color:var(--ink); border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--cut); color:var(--cut); opacity:1}
+
+/* ---------------- drawing ---------------- */
+.plate{background:var(--surface); border:1px solid var(--line); padding:16px 16px 11px}
+.plate svg{display:block; width:100%; height:auto}
+.plate figcaption{
+  display:flex; flex-wrap:wrap; gap:5px 16px; margin-top:11px; padding-top:10px;
+  border-top:1px solid var(--line-soft);
+  font-family:var(--f-mono); font-size:10px; color:var(--muted); letter-spacing:.03em;
+}
+.plate figcaption span{display:flex; align-items:center; gap:6px}
+.sw{width:14px; height:2px; flex:none}
+.sw.box{width:8px; height:8px; background:var(--surface); border:1.2px solid var(--cut)}
+
+.trace{
+  fill:none; stroke:var(--cut); stroke-width:3; stroke-linecap:round;
+  stroke-dasharray:44 760; stroke-dashoffset:804;
+  animation:run 2.6s cubic-bezier(.45,.05,.3,1) .35s 1 forwards;
+  opacity:.85;
+}
+@keyframes run{ to{ stroke-dashoffset:0 } }
+@media (prefers-reduced-motion:reduce){ .trace{display:none} }
+
+/* ---------------- section frame ---------------- */
+section{border-bottom:1px solid var(--line)}
+section > .wrap{padding-top:66px; padding-bottom:66px}
+.eyebrow{
+  font-family:var(--f-mono); font-size:11px; font-weight:500; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--cut); display:flex; align-items:center; gap:14px;
+  margin:0 0 18px;
+}
+.eyebrow::after{content:""; flex:1; height:1px; background:var(--line)}
+h2{
+  font-size:clamp(25px,3.4vw,34px); font-weight:900; letter-spacing:-.025em;
+  line-height:1.3; margin:0 0 14px; text-wrap:balance;
+}
+.lede{font-size:16.5px; color:var(--ink-soft); max-width:56ch; margin:0 0 32px; line-height:1.85}
+.lede b{color:var(--ink)}
+
+/* ---------------- before / after ---------------- */
+.compare{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+.cmp{border:1px solid var(--line); background:var(--surface); padding:20px 22px 22px}
+.cmp.now{opacity:.78}
+.cmp h3{
+  font-family:var(--f-mono); font-size:11px; font-weight:600; letter-spacing:.12em;
+  text-transform:uppercase; margin:0 0 14px; color:var(--muted);
+}
+.cmp.next h3{color:var(--cut)}
+.chain{display:flex; flex-direction:column; gap:0; font-size:13.5px}
+.chain div{
+  padding:8px 0; border-bottom:1px dashed var(--line);
+  display:flex; align-items:baseline; gap:10px; line-height:1.6;
+}
+.chain div:last-child{border-bottom:0}
+.chain .tool{font-family:var(--f-mono); font-size:10.5px; color:var(--muted); white-space:nowrap; min-width:78px}
+.cmp.next .chain .tool{color:var(--cut)}
+.cmp p.foot{margin:16px 0 0; font-size:12.5px; color:var(--muted); font-family:var(--f-mono)}
+
+/* ---------------- steps ---------------- */
+.figrow{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:34px}
+.fig{border:1px solid var(--line); background:var(--surface); padding:14px 14px 12px}
+.fig svg{display:block; width:100%; height:auto}
+.fig .cap{
+  margin-top:10px; padding-top:9px; border-top:1px solid var(--line-soft);
+  font-family:var(--f-mono); font-size:10.5px; color:var(--muted); letter-spacing:.04em;
+}
+.fig .cap b{display:block; font-family:var(--f-body); font-size:13.5px; color:var(--ink); font-weight:700; letter-spacing:0; margin-top:2px}
+
+ol.steps{list-style:none; margin:0; padding:0; counter-reset:s; max-width:70ch}
+ol.steps li{
+  counter-increment:s; display:grid; grid-template-columns:36px 1fr; gap:14px;
+  padding:12px 0; border-bottom:1px solid var(--line-soft); align-items:baseline;
+}
+ol.steps li:last-child{border-bottom:0}
+ol.steps li::before{
+  content:counter(s,decimal-leading-zero);
+  font-family:var(--f-mono); font-size:11px; font-weight:600; color:var(--cut); letter-spacing:.05em;
+}
+ol.steps b{font-weight:700}
+ol.steps span{color:var(--ink-soft); font-size:14.5px; line-height:1.75}
+
+/* ---------------- exports ---------------- */
+.exports{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+.ex{border:1px solid var(--line); background:var(--surface); display:flex; flex-direction:column}
+.ex-top{padding:18px 20px 14px; border-bottom:1px solid var(--line-soft)}
+.ex-top .fmt{font-family:var(--f-mono); font-size:28px; font-weight:600; letter-spacing:-.02em; line-height:1.1}
+.ex-cut .fmt{color:var(--cut)} .ex-print .fmt{color:var(--print)}
+.ex-top .for{font-size:13px; color:var(--muted); margin-top:4px}
+.ex dl{margin:0; padding:2px 20px 16px; display:grid; grid-template-columns:auto 1fr}
+.ex dt{
+  font-family:var(--f-mono); font-size:10.5px; color:var(--muted); letter-spacing:.05em;
+  padding:7px 14px 7px 0; border-bottom:1px solid var(--line-soft); white-space:nowrap;
+}
+.ex dd{
+  margin:0; font-size:12.5px; padding:7px 0; border-bottom:1px solid var(--line-soft);
+  font-family:var(--f-mono); font-variant-numeric:tabular-nums; text-align:right;
+}
+.ex dl > dt:last-of-type, .ex dl > dd:last-of-type{border-bottom:0}
+
+/* ---------------- pillars ---------------- */
+.pillars{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:0; border-top:1px solid var(--line)}
+.pil{padding:22px 24px 24px 0; border-right:1px solid var(--line-soft); margin-right:24px}
+.pil:last-child{border-right:0; margin-right:0}
+.pil .n{font-family:var(--f-mono); font-size:10.5px; color:var(--cut); letter-spacing:.12em; text-transform:uppercase}
+.pil h3{font-size:15.5px; font-weight:700; margin:8px 0 8px; letter-spacing:-.005em}
+.pil p{margin:0; font-size:13.5px; color:var(--ink-soft); line-height:1.8}
+@media (max-width:760px){ .pil{border-right:0; margin-right:0; border-bottom:1px solid var(--line-soft); padding-right:0} .pil:last-child{border-bottom:0} }
+
+/* ---------------- platforms ---------------- */
+.plats{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:16px}
+.plat{border:1px solid var(--line); background:var(--surface); padding:16px 18px}
+.plat .os{font-weight:700; font-size:15px; margin-bottom:3px}
+.plat .pkg{font-family:var(--f-mono); font-size:11.5px; color:var(--muted); line-height:1.7}
+
+/* ---------------- roadmap ---------------- */
+.gantt{border:1px solid var(--line); background:var(--surface); padding:20px 22px 16px; overflow-x:auto}
+.gantt-inner{min-width:540px}
+.gscale{
+  display:grid; grid-template-columns:126px repeat(15,1fr);
+  font-family:var(--f-mono); font-size:10px; color:var(--muted);
+  border-bottom:1px solid var(--line); padding-bottom:6px; margin-bottom:10px;
+}
+.gscale i{font-style:normal; font-variant-numeric:tabular-nums}
+.grow{display:grid; grid-template-columns:126px repeat(15,1fr); align-items:center; margin-bottom:6px}
+.glab{font-family:var(--f-mono); font-size:11.5px; padding-right:12px; white-space:nowrap}
+.glab b{color:var(--cut); font-weight:600}
+.gbar{
+  height:21px; background:var(--surface-2); border:1px solid var(--line);
+  display:flex; align-items:center; padding:0 8px;
+  font-family:var(--f-mono); font-size:10px; color:var(--ink-soft);
+  white-space:nowrap; overflow:hidden;
+}
+.gbar.acc{background:var(--cut-tint); border-color:var(--cut); color:var(--cut); font-weight:600}
+.gnote{font-family:var(--f-mono); font-size:11.5px; color:var(--muted); margin-top:12px}
+
+/* ---------------- footer ---------------- */
+footer{padding:40px 0 56px}
+footer .wrap{display:flex; flex-wrap:wrap; gap:14px 32px; align-items:baseline; justify-content:space-between}
+footer .lics{font-family:var(--f-mono); font-size:11.5px; color:var(--muted); display:flex; flex-wrap:wrap; gap:8px 22px}
+footer a{color:var(--muted); text-decoration:none; border-bottom:1px solid var(--line)}
+footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
+
+@media (max-width:900px){
+  .hero .wrap{grid-template-columns:minmax(0,1fr); gap:40px; padding-top:52px; padding-bottom:52px}
+  .plate{max-width:400px}
+  .compare, .exports{grid-template-columns:1fr}
+  .figrow{grid-template-columns:1fr; max-width:340px}
+}
+@media (max-width:620px){ .wrap{padding:0 18px} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#top">kakomu<i>.</i></a>
+    <nav class="topnav">
+      <a href="#how">つかいかた</a>
+      <a href="#export" class="hide-sm">書き出し</a>
+      <a href="#roadmap" class="hide-sm">開発状況</a>
+      <a href="https://github.com/tukumanalab/kakomu">GitHub</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ================= HERO ================= -->
+<div class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <div class="status"><span class="dot"></span>設計中 — 実装はこれから</div>
+      <h1>kakomu</h1>
+      <p class="kanji">/kakomɯ/ — <b>囲む</b>。画像を囲むカットラインを作る。</p>
+      <p class="tagline">アクスタとアクキーの入稿データだけを作るエディタ。</p>
+      <p class="sub">
+        画像を置き、背景を消し、その 3mm 外側を囲むベジェ曲線を生成する。
+        カットラインは SVG、絵柄は UV プリンタ向けの PDF で書き出せます。
+      </p>
+      <div class="ctas">
+        <a class="btn" href="https://github.com/tukumanalab/kakomu">GitHub で見る →</a>
+        <a class="btn ghost" href="https://github.com/tukumanalab/kakomu/blob/main/SPEC.md">設計仕様 SPEC.md</a>
+      </div>
+    </div>
+
+    <figure class="plate">
+      <svg viewBox="0 0 250 208" role="img" aria-label="絵柄のシルエットと、その外側 3mm に生成されたカットライン、直径 4mm のキーホルダー穴を示す原寸図面">
+        <defs>
+          <path id="fig-cut" d="M118,30 A12,12 0 0 1 142,30 L142,48 C160,54 172,64 172,82 C172,91 169,98 165,104
+            C186,117 197,139 198,160 L198,174 Q198,184 188,184 L72,184 Q62,184 62,174 L62,160
+            C63,139 74,117 95,104 C91,98 88,91 88,82 C88,64 100,54 118,48 Z"/>
+          <path id="fig-art" d="M130,54 C148,54 158,68 158,82 C158,92 152,100 146,104 C170,110 182,130 184,154
+            L184,170 L76,170 L76,154 C78,130 90,110 114,104 C108,100 102,92 102,82
+            C102,68 112,54 130,54 Z"/>
+        </defs>
+
+        <use href="#fig-cut" fill="none" stroke="var(--cut)" stroke-width="1.4"/>
+        <use href="#fig-cut" class="trace"/>
+        <use href="#fig-art" fill="var(--surface-2)" stroke="var(--line)" stroke-width="1"/>
+
+        <circle cx="130" cy="30" r="6" fill="none" stroke="var(--cut)" stroke-width="1.4"/>
+        <line x1="130" y1="22" x2="130" y2="38" stroke="var(--cut)" stroke-width=".5" stroke-dasharray="2 2"/>
+        <line x1="122" y1="30" x2="138" y2="30" stroke="var(--cut)" stroke-width=".5" stroke-dasharray="2 2"/>
+        <text x="144" y="27" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--cut)">ø4</text>
+
+        <g fill="var(--surface)" stroke="var(--cut)" stroke-width="1.2">
+          <rect x="115" y="45.5" width="5" height="5"/>
+          <rect x="139.5" y="45.5" width="5" height="5"/>
+          <rect x="169.5" y="79.5" width="5" height="5"/>
+          <rect x="195.5" y="157.5" width="5" height="5"/>
+          <rect x="127.5" y="181.5" width="5" height="5"/>
+          <rect x="59.5" y="157.5" width="5" height="5"/>
+          <rect x="85.5" y="79.5" width="5" height="5"/>
+        </g>
+
+        <line x1="184" y1="163" x2="198" y2="163" stroke="var(--ink-soft)" stroke-width=".7"/>
+        <line x1="184" y1="159" x2="184" y2="167" stroke="var(--ink-soft)" stroke-width=".7"/>
+        <line x1="198" y1="159" x2="198" y2="167" stroke="var(--ink-soft)" stroke-width=".7"/>
+        <text x="204" y="166" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--ink-soft)">3mm</text>
+
+        <text x="8" y="201" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--muted)">SCALE 1:1 — 座標系はすべて mm</text>
+      </svg>
+      <figcaption>
+        <span><i class="sw" style="background:var(--cut)"></i>カットライン / SVG</span>
+        <span><i class="sw" style="background:var(--surface-2); height:8px; border:1px solid var(--line)"></i>絵柄 / PDF</span>
+        <span><i class="sw box"></i>ベジェアンカー</span>
+      </figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- ================= WHY ================= -->
+<section id="why">
+  <div class="wrap">
+    <p class="eyebrow">なぜ作るか</p>
+    <h2>3 つのツールをまたいでいた作業を、1 本の導線にまとめる。</h2>
+    <p class="lede">
+      アクリルグッズの入稿データ作りは、切り抜き・パス化・オフセットがそれぞれ別のソフトの仕事になっています。
+      kakomu は<b>この一連だけ</b>を引き受けます。汎用ドローイングツールにはしません。
+    </p>
+    <div class="compare">
+      <div class="cmp now">
+        <h3>いまの手順</h3>
+        <div class="chain">
+          <div><span class="tool">Photoshop</span><span>背景を切り抜く</span></div>
+          <div><span class="tool">↓ 書き出し</span><span>透過 PNG</span></div>
+          <div><span class="tool">Illustrator</span><span>画像トレースでパス化する</span></div>
+          <div><span class="tool">↓ 手作業</span><span>パスのオフセット、ノードの整理</span></div>
+          <div><span class="tool">↓ 手作業</span><span>穴・台座を描き、寸法を調べ直す</span></div>
+          <div><span class="tool">↓ 書き出し</span><span>SVG と PDF を別々に設定する</span></div>
+        </div>
+        <p class="foot">ツール 2〜3 種 / ライセンス費 / 単位系の事故</p>
+      </div>
+      <div class="cmp next">
+        <h3>kakomu</h3>
+        <div class="chain">
+          <div><span class="tool">kakomu</span><span>画像をドロップする</span></div>
+          <div><span class="tool">1 クリック</span><span>背景を消す</span></div>
+          <div><span class="tool">1 クリック</span><span>カットラインを生成する</span></div>
+          <div><span class="tool">ドラッグ</span><span>ノードを数点動かして整える</span></div>
+          <div><span class="tool">1 クリック</span><span>穴・台座を置く（寸法は既定値）</span></div>
+          <div><span class="tool">1 クリック</span><span>SVG と PDF を同時に書き出す</span></div>
+        </div>
+        <p class="foot">ソフト 1 つ / オープンソース / 座標はすべて mm</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW ================= -->
+<section id="how">
+  <div class="wrap">
+    <p class="eyebrow">つかいかた</p>
+    <h2>初回でも、5 分で入稿データになる。</h2>
+    <p class="lede">これがこのソフトの唯一の成功条件です。チュートリアルなしで通せることを目標にしています。</p>
+
+    <div class="figrow">
+      <figure class="fig">
+        <svg viewBox="52 8 156 186" role="img" aria-label="背景のある写真">
+          <defs>
+            <path id="s-art" d="M130,54 C148,54 158,68 158,82 C158,92 152,100 146,104 C170,110 182,130 184,154
+              L184,170 L76,170 L76,154 C78,130 90,110 114,104 C108,100 102,92 102,82
+              C102,68 112,54 130,54 Z"/>
+            <pattern id="checker" width="12" height="12" patternUnits="userSpaceOnUse">
+              <rect width="12" height="12" fill="var(--surface)"/>
+              <rect width="6" height="6" fill="var(--surface-2)"/>
+              <rect x="6" y="6" width="6" height="6" fill="var(--surface-2)"/>
+            </pattern>
+          </defs>
+          <rect x="56" y="12" width="148" height="178" fill="var(--surface-2)"/>
+          <use href="#s-art" fill="var(--muted)" opacity=".55"/>
+        </svg>
+        <figcaption class="cap">STEP 01<b>画像をインポート</b></figcaption>
+      </figure>
+
+      <figure class="fig">
+        <svg viewBox="52 8 156 186" role="img" aria-label="背景が透過された画像">
+          <rect x="56" y="12" width="148" height="178" fill="url(#checker)"/>
+          <use href="#s-art" fill="var(--muted)" opacity=".55"/>
+        </svg>
+        <figcaption class="cap">STEP 02<b>背景を消す</b></figcaption>
+      </figure>
+
+      <figure class="fig">
+        <svg viewBox="52 8 156 186" role="img" aria-label="透過画像の外側に生成されたカットライン">
+          <rect x="56" y="12" width="148" height="178" fill="url(#checker)"/>
+          <use href="#s-art" fill="var(--muted)" opacity=".55"/>
+          <path d="M118,30 A12,12 0 0 1 142,30 L142,48 C160,54 172,64 172,82 C172,91 169,98 165,104
+            C186,117 197,139 198,160 L198,174 Q198,184 188,184 L72,184 Q62,184 62,174 L62,160
+            C63,139 74,117 95,104 C91,98 88,91 88,82 C88,64 100,54 118,48 Z"
+            fill="none" stroke="var(--cut)" stroke-width="2"/>
+          <circle cx="130" cy="30" r="6" fill="none" stroke="var(--cut)" stroke-width="2"/>
+        </svg>
+        <figcaption class="cap">STEP 03<b>カットラインを作る</b></figcaption>
+      </figure>
+    </div>
+
+    <ol class="steps">
+      <li><span><b>画像をインポートする。</b>ドラッグ &amp; ドロップ、またはクリップボードから貼り付け。DPI から実寸を推定して配置します。</span></li>
+      <li><span><b>背景を消す。</b>同梱のローカル AI モデルが自動で切り抜きます。画像を外部に送信しません。</span></li>
+      <li><span><b>カットラインを作る。</b>アルファ形状の 3mm 外側に、なめらかなベジェ曲線が生成されます。</span></li>
+      <li><span><b>形を整える。</b>生成結果は普通のパスです。そのままノードツールで細い突起を丸められます。</span></li>
+      <li><span><b>パーツを足す。</b>アクキーなら ø4mm の穴、アクスタなら差し込みスリット付きの台座。寸法は既定値が入っています。</span></li>
+      <li><span><b>書き出す。</b>カットライン <code>.svg</code> と絵柄 <code>.pdf</code> が同時に出力されます。</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= PILLARS ================= -->
+<section id="design">
+  <div class="wrap">
+    <p class="eyebrow">設計の柱</p>
+    <h2>加工できる形しか出さない。</h2>
+    <p class="lede">きれいに見えても、細すぎる突起は折れ、小さすぎる穴は開きません。生成した形は必ず検査します。</p>
+    <div class="pillars">
+      <div class="pil">
+        <div class="n">Unit</div>
+        <h3>座標系はすべて mm</h3>
+        <p>UI にピクセルを出しません。例外は実効解像度の dpi 表示だけ。印刷用ツールで最も事故が起きるのが単位系だからです。</p>
+      </div>
+      <div class="pil">
+        <div class="n">Check</div>
+        <h3>入稿バリデーション</h3>
+        <p>最小幅 1.5mm、最小穴径 ø2mm、自己交差、開いたパス、内角 20° 未満の鋭角、300dpi 未満の絵柄を自動検査し、キャンバス上に印を出します。</p>
+      </div>
+      <div class="pil">
+        <div class="n">Undo</div>
+        <h3>破壊的な操作を作らない</h3>
+        <p>背景透過もカットライン生成も元データを消しません。元画像は保存ファイルの中に無改変で残ります。いつでも戻れるから試せます。</p>
+      </div>
+      <div class="pil">
+        <div class="n">Local</div>
+        <h3>オフラインで完結</h3>
+        <p>AI 推論はすべて手元で動きます。通信するのはモデルの初回ダウンロードと更新確認だけで、どちらも無効化できます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= EXPORT ================= -->
+<section id="export">
+  <div class="wrap">
+    <p class="eyebrow">書き出し</p>
+    <h2>切る側と刷る側に、それぞれ正しい形式で。</h2>
+    <p class="lede">
+      書き出しダイアログは<b>「両方まとめて書き出す」を主導線</b>に置きます。片方を忘れる事故を防ぐためです。
+    </p>
+    <div class="exports">
+      <div class="ex ex-cut">
+        <div class="ex-top">
+          <div class="fmt">SVG</div>
+          <div class="for">カットライン → 加工業者・レーザーカッター</div>
+        </div>
+        <dl>
+          <dt>単位</dt><dd>1 unit = 1 mm</dd>
+          <dt>viewBox</dt><dd>mm 値と 1:1</dd>
+          <dt>線</dt><dd>0.1mm / fill none</dd>
+          <dt>色</dt><dd>#FF00FF</dd>
+          <dt>レイヤー名</dt><dd>CutContour</dd>
+          <dt>transform</dt><dd>全てベイク</dd>
+          <dt>曲線</dt><dd>三次ベジェのみ</dd>
+        </dl>
+      </div>
+      <div class="ex ex-print">
+        <div class="ex-top">
+          <div class="fmt">PDF</div>
+          <div class="for">絵柄 → UV プリンタの RIP ソフト</div>
+        </div>
+        <dl>
+          <dt>版</dt><dd>PDF 1.7</dd>
+          <dt>解像度</dt><dd>600 dpi</dd>
+          <dt>圧縮</dt><dd>FlateDecode</dd>
+          <dt>透過</dt><dd>SMask で保持</dd>
+          <dt>色空間</dt><dd>sRGB + ICC</dd>
+          <dt>TrimBox</dt><dd>仕上がりサイズ</dd>
+          <dt>BleedBox</dt><dd>+ 塗り足し 3mm</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PLATFORMS ================= -->
+<section id="platforms">
+  <div class="wrap">
+    <p class="eyebrow">対応環境</p>
+    <h2>Windows、macOS、そして Linux。</h2>
+    <p class="lede">
+      Tauri v2 で作るため、バイナリは約 10MB。OS ネイティブの WebView を使うので、
+      <b>Wayland / Hyprland 環境でも素直に動きます</b>。omarchy は主要な対応対象です。
+    </p>
+    <div class="plats">
+      <div class="plat"><div class="os">Windows</div><div class="pkg">10 (1809) / 11<br>MSI・NSIS</div></div>
+      <div class="plat"><div class="os">macOS</div><div class="pkg">12 Monterey 以降<br>dmg（Universal）</div></div>
+      <div class="plat"><div class="os">Linux</div><div class="pkg">glibc 2.31+<br>AppImage・deb</div></div>
+      <div class="plat"><div class="os">omarchy / Arch</div><div class="pkg">Hyprland (Wayland)<br>AUR: kakomu-bin</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ROADMAP ================= -->
+<section id="roadmap">
+  <div class="wrap">
+    <p class="eyebrow">開発状況</p>
+    <h2>まだダウンロードはできません。</h2>
+    <p class="lede">
+      現在あるのは設計仕様とこのページだけです。以下は 1 人でフルタイム相当の場合の見積もりで、
+      各段階に<b>「動くものが出る」完了条件</b>を置いています。
+    </p>
+    <div class="gantt">
+      <div class="gantt-inner">
+        <div class="gscale">
+          <span></span>
+          <i style="grid-column:2/7">週 1</i><i style="grid-column:7/12">週 6</i><i style="grid-column:12/17">週 11 — 15</i>
+        </div>
+        <div class="grow"><div class="glab"><b>M0</b> 基盤</div><div class="gbar acc" style="grid-column:2/4">2週 — 3 OS でビルドが通る</div></div>
+        <div class="grow"><div class="glab"><b>M1</b> 書き出し</div><div class="gbar" style="grid-column:4/6">2週 — PDF と SVG が出る</div></div>
+        <div class="grow"><div class="glab"><b>M2</b> ベジェ編集</div><div class="gbar acc" style="grid-column:6/9">3週 — 手動で囲めば成立する</div></div>
+        <div class="grow"><div class="glab"><b>M3</b> 背景透過</div><div class="gbar" style="grid-column:9/11">2週 — ワンクリックで消える</div></div>
+        <div class="grow"><div class="glab"><b>M4</b> カットライン</div><div class="gbar acc" style="grid-column:11/14">3週 — 5 分の導線が開通</div></div>
+        <div class="grow"><div class="glab"><b>M5</b> パーツ・磨き</div><div class="gbar" style="grid-column:14/16">2週 — v1.0 として配布可能</div></div>
+        <div class="grow"><div class="glab"><b>M6</b> 配布</div><div class="gbar" style="grid-column:16/17">1週</div></div>
+        <div class="gnote">合計 15 週。M2 完了時点で「Inkscape の代わり」として最低限成立します。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="ctas">
+      <a class="btn" href="https://github.com/tukumanalab/kakomu">リポジトリを見る →</a>
+      <a class="btn ghost" href="https://github.com/tukumanalab/kakomu/blob/main/SPEC.md">SPEC.md</a>
+    </div>
+    <div class="lics">
+      <span>MIT License</span>
+      <span>© 2026 Junya Ishihara</span>
+      <a href="https://github.com/tukumanalab">tukumanalab</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
