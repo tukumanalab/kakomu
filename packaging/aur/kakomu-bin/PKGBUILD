@@ -27,14 +27,20 @@ provides=('kakomu')
 conflicts=('kakomu')
 options=('!strip' '!debug')
 
-source=("${pkgname}-${pkgver}.deb::${url}/releases/download/v${pkgver}/kakomu_${pkgver}_amd64.deb")
-sha256sums=('0000000000000000000000000000000000000000000000000000000000000000')
+# deb には LICENSE が入っていないので、タグから別に取ってくる
+source=(
+  "${pkgname}-${pkgver}.deb::${url}/releases/download/v${pkgver}/kakomu_${pkgver}_amd64.deb"
+  "LICENSE-${pkgver}::${url}/raw/v${pkgver}/LICENSE"
+)
+# 1 つめが deb、2 つめが LICENSE。update.sh が書き換える
+sha256sums=('899a23cf2baed368c22498b431752c94333df59880eb5b0bd1ee23067037c97c' '78c384537f1ac73a60cade835693da1d45950de276a958f14ab8fbfa56799a7e')
 
 package() {
-  # deb は ar 書庫。中身の data.tar.* をそのまま展開すれば所定の場所に収まる
+  # deb は ar 書庫。中身の data.tar.* を展開すれば所定の場所に収まる。
+  # 入っているのは usr/bin/kakomu と .desktop、アイコン一式
   bsdtar -xf "${pkgname}-${pkgver}.deb" -C "${srcdir}"
   bsdtar -xf "${srcdir}"/data.tar.* -C "${pkgdir}"
 
-  install -Dm644 "${pkgdir}/usr/share/doc/kakomu/LICENSE" \
-    "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE" 2>/dev/null || true
+  install -Dm644 "${srcdir}/LICENSE-${pkgver}" \
+    "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }

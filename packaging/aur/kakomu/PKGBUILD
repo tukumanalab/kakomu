@@ -24,7 +24,7 @@ provides=('kakomu')
 conflicts=('kakomu-bin')
 
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz")
-sha256sums=('0000000000000000000000000000000000000000000000000000000000000000')
+sha256sums=('68f259cf8b4ffa2532a8d42f0f7f8168ede6cf37b6328c5998e0d9a6f7129a9e')
 
 prepare() {
   cd "${srcdir}/${pkgname}-${pkgver}"

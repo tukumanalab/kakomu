@@ -41,12 +41,15 @@ set_field() {
   ' "$file" > "$file.new" && mv "$file.new" "$file"
 }
 
-# --- kakomu-bin（ビルド済み deb） --------------------------------------
+# --- kakomu-bin（ビルド済み deb と LICENSE） ---------------------------
 bin_sha="$(fetch_sha "${repo}/releases/download/v${ver}/kakomu_${ver}_amd64.deb")"
+lic_sha="$(fetch_sha "${repo}/raw/v${ver}/LICENSE")"
 set_field "$here/kakomu-bin/PKGBUILD" pkgver "$ver"
 set_field "$here/kakomu-bin/PKGBUILD" pkgrel 1
-set_field "$here/kakomu-bin/PKGBUILD" sha256sums "('$bin_sha')"
-echo "kakomu-bin: $ver / $bin_sha"
+set_field "$here/kakomu-bin/PKGBUILD" sha256sums "('$bin_sha' '$lic_sha')"
+echo "kakomu-bin: $ver"
+echo "  deb     $bin_sha"
+echo "  LICENSE $lic_sha"
 
 # --- kakomu（ソース） ---------------------------------------------------
 src_sha="$(fetch_sha "${repo}/archive/refs/tags/v${ver}.tar.gz")"

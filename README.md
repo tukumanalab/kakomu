@@ -20,9 +20,10 @@
 
 ## 入れかた
 
-> **配布はまだ準備中です。** タグを打つと 3 OS 分のインストーラが
-> [Releases](https://github.com/tukumanalab/kakomu/releases) に出るようにしてあります。
-> それまでは下の「ソースから動かす」を使ってください。
+**[Releases](https://github.com/tukumanalab/kakomu/releases) からダウンロードできます。**
+
+> **v0.1.0 はプレリリースです。** 切る線の自動生成（M4）がまだ入っておらず、
+> 書き出すと板の外形が仮のカットラインとして出ます。
 
 コード署名をまだ入れていないので、どの OS でも初回に警告が出ます（SPEC 10.3）。
 
@@ -52,7 +53,7 @@ Arch では **AUR パッケージを使うのがいちばん簡単**です。依
 yay -S kakomu-bin
 ```
 
-> AUR への登録はまだです。それまでは、このリポジトリから直接ビルドできます。
+> AUR への登録はまだです。それまでは、このリポジトリから直接入れられます。
 > やることは同じで、依存も一緒に入ります。
 >
 > ```sh
@@ -60,6 +61,9 @@ yay -S kakomu-bin
 > cd kakomu/packaging/aur/kakomu-bin
 > makepkg -si
 > ```
+>
+> これは [Releases](https://github.com/tukumanalab/kakomu/releases) の
+> `.deb` を取ってきて配置します。チェックサムは照合済みです。
 
 #### AppImage を手で入れる場合
 
