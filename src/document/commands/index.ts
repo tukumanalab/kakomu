@@ -5,7 +5,7 @@
 
 import type { Command } from '../store';
 import { withAsset, withNode, withNodeAdded, withNodeRemoved, withLayer, findNode } from '../store';
-import type { Asset, Doc, ImageNode, LayerRole, Matrix, Node, NodeId } from '../types';
+import type { Asset, Doc, ImageNode, LayerRole, Matrix, Node, NodeId, PathNode } from '../types';
 
 /** 絵を入れる */
 export function importImage(asset: Asset, node: ImageNode): Command {
@@ -102,5 +102,21 @@ export function applyMatting(
           : n,
       ),
     revert: (d) => withNode(d, id, (n) => (n.type === 'image' ? { ...n, matting: before } : n)),
+  };
+}
+
+/**
+ * 切る線を置く。
+ * 絵と同じ transform を持たせるので、生成した座標がそのまま重なる。
+ * できたものは普通のパスなので、そのまま点をドラッグして直せる（SPEC 7.4）。
+ */
+export function addCutline(node: PathNode, replacing: NodeId | null): Command {
+  return {
+    labelKey: 'cmd.makeCutline',
+    apply: (d) => {
+      const cleared = replacing ? withNodeRemoved(d, replacing) : d;
+      return withNodeAdded(cleared, 'cutline', node);
+    },
+    revert: (d) => withNodeRemoved(d, node.id),
   };
 }

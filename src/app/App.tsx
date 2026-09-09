@@ -16,22 +16,28 @@ import {
   undo,
 } from '~/document/store';
 import {
+  addCutline,
   applyMatting,
   deleteNode,
   importImage as importImageCommand,
 } from '~/document/commands';
-import type { Asset, ImageNode } from '~/document/types';
+import type { Anchor, Asset, ImageNode, PathNode } from '~/document/types';
 import { ASSUMED_DPI, pxToMm } from '~/document/types';
-import { importImage, pickImageFile, removeBackground } from '~/ipc';
+import { generateCutline, importImage, pickImageFile, removeBackground } from '~/ipc';
 import type { MattingProgress } from '~/ipc';
 import { exportBoth, pickExportFolder } from '~/export';
 import type { ExportResult } from '~/export';
 import {
+  cutlineBusy,
+  cutlineParams,
   edgeTighten,
   mattingModel,
   mattingProgress,
   refreshModels,
   setCompareOriginal,
+  setCutlineBusy,
+  setCutlineIssues,
+  setCutlineSegments,
   setMattingProgress,
 } from './session';
 import * as M from '~/geometry/matrix';
@@ -51,6 +57,8 @@ export default function App() {
 
   const hasArtwork = () => imageNodes().length > 0;
   const everythingCutOut = () => hasArtwork() && imageNodes().every((n) => n.matting);
+  const hasCutline = () =>
+    doc().layers.some((l) => l.role === 'cutline' && l.nodes.length > 0);
 
   onMount(() => {
     initI18n();
@@ -186,6 +194,71 @@ export default function App() {
     }
   }
 
+  /**
+   * 切る線を作る。
+   * できたものは普通のパスなので、そのまま点をドラッグして直せる。
+   */
+  async function onMakeCutline() {
+    const node = targetImage();
+    if (!node) return;
+    // 背景を消してあればその結果から、まだなら元画像から作る
+    const assetId = node.matting?.resultAssetId ?? node.assetId;
+    const asset = doc().assets[assetId];
+    if (!asset) return;
+
+    setError(null);
+    setCutlineBusy(true);
+    try {
+      const r = await generateCutline(
+        asset.path,
+        node.widthMm,
+        node.heightMm,
+        cutlineParams(),
+      );
+      const path: PathNode = {
+        id: uid('nd'),
+        type: 'path',
+        name: t('cutline.title'),
+        visible: true,
+        locked: false,
+        // 絵と同じ姿勢を持たせると、生成した座標がそのまま重なる
+        transform: node.transform,
+        subpaths: r.subpaths.map((sp) => ({
+          closed: sp.closed,
+          anchors: sp.anchors.map(
+            (a): Anchor => ({
+              p: { x: a.p[0], y: a.p[1] },
+              in: { x: a.in[0], y: a.in[1] },
+              out: { x: a.out[0], y: a.out[1] },
+              kind: a.kind === 'corner' ? 'corner' : 'smooth',
+            }),
+          ),
+        })),
+        fill: null,
+        stroke: { color: '#FF00FF', widthMm: 0.1, opacity: 1 },
+        origin: {
+          type: 'cutline',
+          sourceNodeId: node.id,
+          params: cutlineParams(),
+          manuallyEdited: false,
+        },
+      };
+      run(addCutline(path, existingCutlineId()));
+      setCutlineIssues(r.issues);
+      setCutlineSegments(r.segmentCount);
+    } catch (e) {
+      setError(`${t('err.cutlineFailed')}（${message(e)}）`);
+    } finally {
+      setCutlineBusy(false);
+    }
+  }
+
+  /** すでに切る線があれば、作り直しで置き換える */
+  function existingCutlineId(): string | null {
+    const layer = doc().layers.find((l) => l.role === 'cutline');
+    return layer?.nodes[0]?.id ?? null;
+  }
+
   /** 選んでいるものを優先し、無ければ絵が 1 枚だけならそれを使う */
   function targetImage(): ImageNode | null {
     const id = selection()[0];
@@ -203,7 +276,8 @@ export default function App() {
         onImport={() => void onImport()}
         onRemoveBackground={() => void onRemoveBackground()}
         onExport={() => void onExport()}
-        busy={busy()}
+        onMakeCutline={() => void onMakeCutline()}
+        busy={busy() || cutlineBusy()}
         hasArtwork={hasArtwork()}
         canRemoveBackground={targetImage() !== null}
       />
@@ -213,6 +287,17 @@ export default function App() {
       <StatusBar />
 
       <Show when={mattingProgress()}>{(p) => <ProgressOverlay progress={p()} />}</Show>
+
+      <Show when={cutlineBusy()}>
+        <div class="overlay">
+          <div class="overlay-box">
+            <p class="overlay-label">{t('cutline.running')}</p>
+            <div class="bar">
+              <div class="fill indeterminate" />
+            </div>
+          </div>
+        </div>
+      </Show>
 
       <Show when={exported()}>
         {(r) => <ExportDone result={r()} onClose={() => setExported(null)} />}
@@ -230,7 +315,11 @@ export default function App() {
       {/* つぎにやることを常に見せる（SPEC 9.2） */}
       <Show when={hasArtwork() && !mattingProgress()}>
         <div class="next-hint">
-          {everythingCutOut() ? t('next.cutline') : t('next.removeBg')}
+          {hasCutline()
+            ? t('next.export')
+            : everythingCutOut()
+              ? t('next.cutline')
+              : t('next.removeBg')}
         </div>
       </Show>
     </div>

@@ -99,3 +99,57 @@ export async function removeBackground(
     originalName: 'cutout.png',
   };
 }
+
+// ---------------------------------------------------------------- 切る線
+
+export interface CutlineParams {
+  offsetMm: number;
+  alphaThreshold: number;
+  smoothing: number;
+  minAreaMm2: number;
+  keepHoles: boolean;
+  enforceMinWidth: boolean;
+}
+
+export interface CutlineIssue {
+  kind: string;
+  severity: 'error' | 'warn';
+  detail: string | null;
+}
+
+interface RawAnchor {
+  p: [number, number];
+  in: [number, number];
+  out: [number, number];
+  kind: string;
+}
+
+interface RawSubPath {
+  closed: boolean;
+  anchors: RawAnchor[];
+  isHole: boolean;
+}
+
+export interface CutlineResult {
+  subpaths: RawSubPath[];
+  issues: CutlineIssue[];
+  segmentCount: number;
+}
+
+/**
+ * 絵のアルファから切る線を作る。座標は絵のローカル mm で返ってくるので、
+ * 絵と同じ transform を持たせれば、そのまま重なる。
+ */
+export async function generateCutline(
+  path: string,
+  widthMm: number,
+  heightMm: number,
+  params: CutlineParams,
+): Promise<CutlineResult> {
+  return invoke<CutlineResult>('generate_cutline', {
+    path,
+    widthMm,
+    heightMm,
+    params,
+  });
+}

@@ -18,6 +18,7 @@ export function TopBar(props: {
   onImport: () => void;
   onRemoveBackground: () => void;
   onExport: () => void;
+  onMakeCutline: () => void;
   busy: boolean;
   hasArtwork: boolean;
   canRemoveBackground: boolean;
@@ -40,8 +41,12 @@ export function TopBar(props: {
       >
         {t('action.removeBg')}
       </button>
-      {/* 囲む は M4。押せないことを隠さない */}
-      <button class="tbtn" disabled title="M4 でつくります">
+      <button
+        class="tbtn"
+        onClick={props.onMakeCutline}
+        disabled={props.busy || !props.canRemoveBackground}
+        title={props.canRemoveBackground ? undefined : t('matting.needImage')}
+      >
         {t('action.makeCutline')}
       </button>
 

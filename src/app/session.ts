@@ -5,7 +5,7 @@
 
 import { createSignal } from 'solid-js';
 import { listModels } from '~/ipc';
-import type { MattingProgress, ModelInfo } from '~/ipc';
+import type { CutlineIssue, MattingProgress, ModelInfo } from '~/ipc';
 
 export type MattingModel = 'isnet-general-use' | 'isnet-anime';
 
@@ -15,6 +15,34 @@ const [edgeTighten, setEdgeTighten] = createSignal(0.35);
 
 /** 消す前の絵と見くらべているあいだ true */
 const [compareOriginal, setCompareOriginal] = createSignal(false);
+
+/** 切る線の作りかた。SPEC 7.4 の既定値 */
+const [cutlineParams, setCutlineParams] = createSignal({
+  offsetMm: 3.0,
+  alphaThreshold: 128,
+  smoothing: 0.5,
+  minAreaMm2: 4.0,
+  keepHoles: false,
+  enforceMinWidth: true,
+});
+
+/** 切る線を作っているあいだ true */
+const [cutlineBusy, setCutlineBusy] = createSignal(false);
+
+/** 直前に作ったときの検査結果 */
+const [cutlineIssues, setCutlineIssues] = createSignal<CutlineIssue[]>([]);
+const [cutlineSegments, setCutlineSegments] = createSignal(0);
+
+export {
+  cutlineParams,
+  setCutlineParams,
+  cutlineBusy,
+  setCutlineBusy,
+  cutlineIssues,
+  setCutlineIssues,
+  cutlineSegments,
+  setCutlineSegments,
+};
 
 /** 実行中だけ値が入る */
 const [mattingProgress, setMattingProgress] = createSignal<MattingProgress | null>(null);

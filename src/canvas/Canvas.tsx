@@ -4,7 +4,8 @@
  */
 
 import { For, Show, createMemo, createSignal, onCleanup, onMount } from 'solid-js';
-import type { ImageNode, Layer, Node, Point } from '~/document/types';
+import type { ImageNode, Layer, Node, PathNode, Point } from '~/document/types';
+import { subpathsToPathData } from '~/geometry/path';
 import { displayAssetId, doc, findNode, isSelected, run, selectOnly, selection } from '~/document/store';
 import { compareOriginal } from '~/app/session';
 import { setImageBox, setTransform } from '~/document/commands';
@@ -327,6 +328,26 @@ function NodeView(props: { node: Node }) {
   const d = doc;
   return (
     <Show when={props.node.visible}>
+      <Show when={props.node.type === 'path'}>
+        {(() => {
+          const n = props.node as PathNode;
+          // 線幅は 0.1mm しかないので、そのままだと画面で見えない。
+          // 実寸は書き出しのときの値を使い、画面では見える太さで描く
+          const shown = () => Math.max(n.stroke?.widthMm ?? 0.1, screenToMm(1.6));
+          return (
+            <path
+              data-node={n.id}
+              d={subpathsToPathData(n.subpaths)}
+              transform={M.toSvg(n.transform)}
+              fill="none"
+              stroke={n.stroke?.color ?? 'var(--cut)'}
+              stroke-width={shown()}
+              vector-effect="none"
+              style={{ cursor: isSelected(n.id) ? 'move' : 'pointer' }}
+            />
+          );
+        })()}
+      </Show>
       <Show when={props.node.type === 'image'}>
         {(() => {
           const n = props.node as ImageNode;

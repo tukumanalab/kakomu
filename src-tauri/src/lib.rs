@@ -1,4 +1,5 @@
 mod commands;
+mod cutline;
 mod error;
 mod export;
 mod matting;
@@ -15,6 +16,7 @@ pub fn run() {
             export::export_pdf,
             export::write_text_file,
             export::ensure_directory,
+            cutline::generate_cutline,
         ])
         .run(tauri::generate_context!())
         .expect("kakomu の起動に失敗しました");

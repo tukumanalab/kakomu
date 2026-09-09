@@ -112,9 +112,10 @@ export interface CutlineParams {
   /** これ未満の孤立した島を無視する */
   minAreaMm2: number;
   keepHoles: boolean;
-  joinStyle: 'round' | 'miter';
   /** 折れやすい細部を自動で太らせる */
   enforceMinWidth: boolean;
+  // 角の処理（丸／尖り）は持たない。距離場で広げると角はかならず丸くなり、
+  // アクリル加工でも丸が推奨なので、選ばせる意味がない
 }
 
 export const DEFAULT_CUTLINE_PARAMS: CutlineParams = {
@@ -123,7 +124,6 @@ export const DEFAULT_CUTLINE_PARAMS: CutlineParams = {
   smoothing: 0.5,
   minAreaMm2: 4.0,
   keepHoles: false,
-  joinStyle: 'round',
   enforceMinWidth: true,
 };
 

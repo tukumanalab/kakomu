@@ -678,3 +678,16 @@ button {
   text-align: left;
   margin-top: 12px;
 }
+
+/* 「くわしい設定」の開閉 */
+.linklike {
+  margin-top: 10px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: calc(var(--fs) - 2px);
+}
+.linklike:hover {
+  color: var(--cut);
+}

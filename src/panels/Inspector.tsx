@@ -9,9 +9,13 @@ import {
 import { setImageBox, toggleLayerVisible, toggleLayerLocked } from '~/document/commands';
 import {
   compareOriginal,
+  cutlineIssues,
+  cutlineParams,
+  cutlineSegments,
   edgeTighten,
   mattingModel,
   models,
+  setCutlineParams,
   setCompareOriginal,
   setEdgeTighten,
   setMattingModel,
@@ -25,6 +29,7 @@ export function Inspector() {
   return (
     <div class="side">
       <MattingPanel />
+      <CutlinePanel />
       <PropertiesPanel />
       <LayersPanel />
       <ChecksPanel />
@@ -328,6 +333,124 @@ function MattingPanel() {
           <span>{t('matting.check')}</span>
         </div>
       </Show>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------ 切る線
+
+function CutlinePanel() {
+  const [advanced, setAdvanced] = createSignal(false);
+  const p = cutlineParams;
+  const update = (patch: Partial<ReturnType<typeof cutlineParams>>) =>
+    setCutlineParams({ ...p(), ...patch });
+
+  return (
+    <div class="panel">
+      <h3>{t('cutline.title')}</h3>
+
+      {/* 表に出すのは 2 つだけ。しきい値や最小面積が最初から並んでいてはいけない */}
+      <div class="field">
+        <label>
+          {t('cutline.offset')} {p().offsetMm.toFixed(1)}
+          {t('unit.mm')}
+        </label>
+        <input
+          type="range"
+          min="0"
+          max="20"
+          step="0.5"
+          value={p().offsetMm}
+          onInput={(e) => update({ offsetMm: Number(e.currentTarget.value) })}
+          style={{ width: '100%', 'accent-color': 'var(--cut)' }}
+        />
+      </div>
+
+      <div class="field" style={{ 'margin-top': '8px' }}>
+        <label>
+          {t('cutline.smoothing')} {Math.round(p().smoothing * 100)}%
+        </label>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value={p().smoothing}
+          onInput={(e) => update({ smoothing: Number(e.currentTarget.value) })}
+          style={{ width: '100%', 'accent-color': 'var(--cut)' }}
+        />
+      </div>
+
+      <button
+        class="linklike"
+        onClick={() => setAdvanced(!advanced())}
+        aria-expanded={advanced()}
+      >
+        {advanced() ? '▾' : '▸'} {t('cutline.advanced')}
+      </button>
+
+      <Show when={advanced()}>
+        <label class="check">
+          <input
+            type="checkbox"
+            checked={p().enforceMinWidth}
+            onChange={(e) => update({ enforceMinWidth: e.currentTarget.checked })}
+          />
+          {t('cutline.enforceMinWidth')}
+        </label>
+        <label class="check">
+          <input
+            type="checkbox"
+            checked={p().keepHoles}
+            onChange={(e) => update({ keepHoles: e.currentTarget.checked })}
+          />
+          {t('cutline.keepHoles')}
+        </label>
+        <div class="field" style={{ 'margin-top': '8px' }}>
+          <label>
+            {t('cutline.threshold')} {p().alphaThreshold}
+          </label>
+          <input
+            type="range"
+            min="1"
+            max="254"
+            step="1"
+            value={p().alphaThreshold}
+            onInput={(e) => update({ alphaThreshold: Number(e.currentTarget.value) })}
+            style={{ width: '100%', 'accent-color': 'var(--cut)' }}
+          />
+        </div>
+        <div class="field" style={{ 'margin-top': '8px' }}>
+          <label>
+            {t('cutline.minArea')} {p().minAreaMm2.toFixed(1)}
+            {t('unit.mm2')}
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="50"
+            step="0.5"
+            value={p().minAreaMm2}
+            onInput={(e) => update({ minAreaMm2: Number(e.currentTarget.value) })}
+            style={{ width: '100%', 'accent-color': 'var(--cut)' }}
+          />
+        </div>
+      </Show>
+
+      <Show when={cutlineSegments() > 0}>
+        <p class="empty-note" style={{ 'margin-top': '10px', 'font-size': '11px' }}>
+          {t('cutline.segments', { n: cutlineSegments() })} ／ {t('cutline.editable')}
+        </p>
+      </Show>
+
+      <For each={cutlineIssues()}>
+        {(issue) => (
+          <div class={`issue ${issue.severity}`} style={{ 'margin-top': '10px' }}>
+            <span class="mark">{issue.severity === 'error' ? '×' : '!'}</span>
+            <span>{t(`issue.${issue.kind}`, { d: issue.detail ?? '' })}</span>
+          </div>
+        )}
+      </For>
     </div>
   );
 }
