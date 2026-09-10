@@ -41,9 +41,9 @@ class: profile-slide
 
   <ul class="facts">
     <li><strong>合同会社つくる社</strong> 代表社員／<strong>株式会社まちクエスト</strong> 代表取締役</li>
-    <li><strong>青山学院大学</strong> 総合文化政策学部 プロジェクト准教授<br><span class="sub">青学つくまなラボ フェロー</span></li>
-    <li><strong>ML2Scratch</strong>・<strong>TM2Scratch</strong> など、Scratch で機械学習を使う拡張機能<br><span class="sub">著書『Scratchではじめる機械学習』（共著）</span></li>
-    <li><strong>CoderDojo 調布・渋谷</strong></li>
+    <li><strong>青山学院大学</strong> プロジェクト准教授<br><span class="sub">青学つくまなラボ フェロー</span></li>
+    <li>フリーランスで、おもに <strong>Ruby on Rails</strong> のプロジェクトを手伝う</li>
+    <li><strong>まちクエスト</strong> を運営<br><span class="sub">https://machique.st</span></li>
   </ul>
 </div>
 
@@ -56,7 +56,7 @@ class: machine-slide
 
 <div class="machine-head">
 
-# わたしの omarchy マシン
+# わたしの Omarchy マシン
 
 <p class="spec">GMKtec ミニPC AMD Ryzen7 8845HS搭載<br><span class="price">￥76,580</span></p>
 
@@ -139,7 +139,7 @@ layout: default
 class: remote-slide
 ---
 
-# omarchy にリモートでつなぐ
+# Omarchy にリモートでつなぐ
 
 <p class="lede">Sunshine × Moonlight を、Tailscale の上で使う</p>
 
@@ -160,7 +160,7 @@ class: remote-slide
   </div>
 
   <section class="box host">
-    <header><span class="tag">Sunshine</span>omarchy マシン</header>
+    <header><span class="tag">Sunshine</span>Omarchy マシン</header>
     <ul>
       <li>画面を取り込んで、動画にして送る</li>
       <li>届いた操作をそのまま反映する</li>
