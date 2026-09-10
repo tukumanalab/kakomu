@@ -1,5 +1,5 @@
 import { For, Show } from 'solid-js';
-import { t } from '~/app/i18n';
+import { readingLevel, setReadingLevel, t } from '~/app/i18n';
 import { canRedo, canUndo, doc, redo, undo } from '~/document/store';
 import { fitCanvas, zoomByStep, zoomToActualSize } from '~/canvas/viewport';
 import type { ToolId } from '~/app/session';
@@ -85,6 +85,26 @@ export function TopBar(props: {
       <button class="tbtn" onClick={zoomToActualSize}>
         {t('action.zoomActual')}
       </button>
+
+      <span style={{ width: '8px' }} />
+
+      {/* よみかた。文言だけが変わり、画面の構造は変わらない（SPEC 3.2） */}
+      <div class="seg" role="group" aria-label={t('read.label')} title={t('read.label')}>
+        <button
+          type="button"
+          aria-pressed={readingLevel() === 'kanji'}
+          onClick={() => setReadingLevel('kanji')}
+        >
+          {t('read.kanji')}
+        </button>
+        <button
+          type="button"
+          aria-pressed={readingLevel() === 'hira'}
+          onClick={() => setReadingLevel('hira')}
+        >
+          {t('read.hira')}
+        </button>
+      </div>
 
       <span class="spacer" />
 

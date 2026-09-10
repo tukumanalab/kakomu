@@ -63,10 +63,12 @@
 }
 
 /* ひらがなモード */
+/*
+ * ひらがなモードで変えるのは文言だけ。書体・文字サイズ・行間は漢字モードと同じにする。
+ * 大きくすると画面の構造が変わって見え、同じ画面だと伝わらないため。
+ * （丸ゴシック --f-round は残してある。戻すときはここで --f-body に当てる）
+ */
 html[data-read='hira'] {
-  --f-body: var(--f-round);
-  --fs: 16px;
-  --lh: 2;
 }
 
 * {
@@ -106,7 +108,8 @@ button {
 
 .app {
   display: grid;
-  grid-template-rows: var(--bar) 1fr 26px;
+  /* 上のバーは、ひらがなで語が長くなると折り返す。ふだんは 1 段のまま */
+  grid-template-rows: auto 1fr 26px;
   grid-template-columns: var(--rail) 1fr var(--side);
   grid-template-areas:
     'top top top'
@@ -120,9 +123,11 @@ button {
 .topbar {
   grid-area: top;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  padding: 0 12px;
+  gap: 6px 10px;
+  min-height: var(--bar);
+  padding: 4px 12px;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
