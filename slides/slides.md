@@ -77,7 +77,7 @@ class: arch-slide
 
 # kakomu のアーキテクチャ
 
-<p class="lede">Tauri v2 — 触って動かすのはフロント、時間のかかる計算は Rust</p>
+<p class="lede">Tauri v2 — 触って動かすのはフロント、時間のかかる処理は Rust</p>
 
 <div class="arch">
   <section class="box front">
