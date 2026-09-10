@@ -51,7 +51,7 @@ class: profile-slide
   </ul>
 </div>
 
-<p class="bridge-line">kakomu は、<strong>つくまなラボ</strong>でアクキー・アクスタを作るために作りました</p>
+<p class="bridge-line">kakomu は、<a href="https://sites.google.com/view/tukumanalab/" target="_blank">つくまなラボ</a>でアクキー・アクスタを作るために作りました</p>
 
 ---
 layout: default

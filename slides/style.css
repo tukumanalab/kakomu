@@ -165,6 +165,18 @@
   color: var(--cut);
 }
 
+/* テーマのリンク色を打ち消し、太字のマゼンタに点線を足してリンクだとわかるようにする */
+.slidev-layout .bridge-line a {
+  font-weight: 700;
+  color: var(--cut);
+  text-decoration: none;
+  border-bottom: 1px dashed currentColor;
+}
+
+.slidev-layout .bridge-line a:hover {
+  border-bottom-style: solid;
+}
+
 /* ---------------------------------------------------------------- 3. マシン */
 
 /* タイトルの横に機種を並べる */
