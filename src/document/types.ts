@@ -135,10 +135,20 @@ export interface PartOrigin {
 export interface HolePart {
   kind: 'hole';
   diameterMm: number;
-  /** 穴の中心から切る線の縁までの最小距離 */
+  /**
+   * 穴のふちから切る線のふちまで空ける距離。
+   * 中心からの距離ではない。φ4mm で中心から 3mm だと板が 1mm しか残らず、
+   * MIN_FEATURE_WIDTH_MM を下回ってしまうため。
+   */
   marginMm: number;
-  center: Point;
+  // 位置は他のノードと同じく transform で持つ。ここに中心を控えると、
+  // 手で動かしたときに二重の持ち方になって食い違う
 }
+
+export const DEFAULT_HOLE_PART: Omit<HolePart, 'kind'> = {
+  diameterMm: 4.0,
+  marginMm: 3.0,
+};
 
 export interface StandPart {
   kind: 'stand';

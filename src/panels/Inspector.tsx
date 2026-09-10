@@ -6,23 +6,26 @@ import {
   run,
   selection,
 } from '~/document/store';
-import { setImageBox, toggleLayerVisible, toggleLayerLocked } from '~/document/commands';
+import { setImageBox, toggleLayerVisible, toggleLayerLocked, updateHole } from '~/document/commands';
+import { buildHole, findHole, holeCenter, holeMargin, resizeHoleInPlace } from '~/document/parts';
 import {
   compareOriginal,
   cutlineIssues,
   cutlineParams,
   cutlineSegments,
   edgeTighten,
+  holePart,
   mattingModel,
   models,
   setCutlineParams,
+  setHolePart,
   setCompareOriginal,
   setEdgeTighten,
   setMattingModel,
 } from '~/app/session';
 import type { MattingModel } from '~/app/session';
-import type { ImageNode, Layer } from '~/document/types';
-import { MIN_PRINT_DPI, effectiveDpi } from '~/document/types';
+import type { HolePart, ImageNode, Layer } from '~/document/types';
+import { MIN_HOLE_DIAMETER_MM, MIN_PRINT_DPI, effectiveDpi } from '~/document/types';
 import * as M from '~/geometry/matrix';
 
 export function Inspector() {
@@ -30,6 +33,7 @@ export function Inspector() {
     <div class="side">
       <MattingPanel />
       <CutlinePanel />
+      <HolePanel />
       <PropertiesPanel />
       <LayersPanel />
       <ChecksPanel />
@@ -213,8 +217,8 @@ export interface Issue {
 }
 
 /**
- * M0 で本当に判定できるのは実効解像度だけ。
- * 最小幅や自己交差は切る線ができてから（M4）。
+ * 刷ってから・切ってからでは直せないものを、先に出す。
+ * 細すぎるところや自己交差は切る線を作るときに Rust 側が見ている。
  */
 export function collectIssues(): Issue[] {
   const d = doc();
@@ -227,6 +231,28 @@ export function collectIssues(): Issue[] {
       const dpi = effectiveDpi(asset.widthPx, node.widthMm);
       if (dpi < MIN_PRINT_DPI) {
         issues.push({ level: 'warn', text: t('warn.lowDpi') });
+      }
+    }
+  }
+
+  // 穴は手でも動かせるので、いまの位置で測り直す（SPEC 7.6）
+  const hole = findHole(d);
+  if (hole) {
+    if (hole.part.diameterMm < MIN_HOLE_DIAMETER_MM) {
+      issues.push({
+        level: 'error',
+        text: t('issue.holeTooSmall', { d: hole.part.diameterMm.toFixed(1) }),
+      });
+    }
+    const margin = holeMargin(d, hole.node, hole.part);
+    if (margin !== null) {
+      if (margin < 0) {
+        issues.push({ level: 'error', text: t('issue.holeOutside') });
+      } else if (margin < hole.part.marginMm) {
+        issues.push({
+          level: 'error',
+          text: t('issue.holeTooCloseToEdge', { d: margin.toFixed(1) }),
+        });
       }
     }
   }
@@ -451,6 +477,112 @@ function CutlinePanel() {
           </div>
         )}
       </For>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------ 穴
+
+/**
+ * キーホルダーの穴。
+ *
+ * 値を変えたらその場で作り直す（SPEC 7.6）。すでに置いてある場所が
+ * 条件を満たしているうちは動かさない。手で置き直した穴が、
+ * 大きさを少し変えただけで飛んでいっては困るため。
+ */
+function HolePanel() {
+  const hole = createMemo(() => findHole(doc()));
+
+  function change(patch: Partial<HolePart>) {
+    const next: HolePart = { ...holePart(), ...patch };
+    setHolePart(next);
+
+    const found = hole();
+    if (!found) return;
+    const before = {
+      transform: found.node.transform,
+      subpaths: found.node.subpaths,
+      part: found.part,
+    };
+    const shape = buildHole(doc(), next, holeCenter(found.node));
+    const after = shape.ok ? shape : resizeHoleInPlace(found.node, next);
+    run(
+      updateHole(
+        found.node.id,
+        before,
+        { transform: after.transform, subpaths: after.subpaths, part: after.part },
+        `hole:${found.node.id}`,
+      ),
+    );
+  }
+
+  function replace() {
+    const found = hole();
+    if (!found) return;
+    const shape = buildHole(doc(), holePart());
+    if (!shape.ok) return;
+    run(
+      updateHole(
+        found.node.id,
+        { transform: found.node.transform, subpaths: found.node.subpaths, part: found.part },
+        { transform: shape.transform, subpaths: shape.subpaths, part: shape.part },
+      ),
+    );
+  }
+
+  const p = () => hole()?.part ?? holePart();
+
+  return (
+    <div class="panel">
+      <h3>{t('hole.title')}</h3>
+
+      <div class="field">
+        <label>
+          {t('hole.diameter')} φ{p().diameterMm.toFixed(1)}
+          {t('unit.mm')}
+        </label>
+        <input
+          type="range"
+          min="2"
+          max="10"
+          step="0.5"
+          value={p().diameterMm}
+          onInput={(e) => change({ diameterMm: Number(e.currentTarget.value) })}
+          style={{ width: '100%', 'accent-color': 'var(--cut)' }}
+        />
+      </div>
+
+      <div class="field" style={{ 'margin-top': '8px' }}>
+        <label>
+          {t('hole.margin')} {p().marginMm.toFixed(1)}
+          {t('unit.mm')}
+        </label>
+        <input
+          type="range"
+          min="1"
+          max="10"
+          step="0.5"
+          value={p().marginMm}
+          onInput={(e) => change({ marginMm: Number(e.currentTarget.value) })}
+          style={{ width: '100%', 'accent-color': 'var(--cut)' }}
+        />
+      </div>
+
+      <Show
+        when={hole()}
+        fallback={
+          <p class="empty-note" style={{ 'margin-top': '10px', 'font-size': '11px' }}>
+            {t('hole.none')}
+          </p>
+        }
+      >
+        <button class="linklike" onClick={replace}>
+          {t('hole.place')}
+        </button>
+        <p class="empty-note" style={{ 'margin-top': '6px', 'font-size': '11px' }}>
+          {t('hole.placed')}
+        </p>
+      </Show>
     </div>
   );
 }

@@ -5,6 +5,13 @@
 
 import type { Anchor, SubPath } from '~/document/types';
 
+/**
+ * 円を三次ベジェ 4 本で近似するときの、ハンドルの長さの比。
+ * 円弧（A コマンド）を使わないのは、加工機のソフトが解釈できないことが
+ * あるため。円・角丸はどこでもこの定数で書く。
+ */
+export const KAPPA = 0.5522847498307936;
+
 /** ノードのローカル座標のまま d を作る。描画側は transform 属性で置く */
 export function subpathsToPathData(subpaths: SubPath[]): string {
   return subpaths.map(subPathToData).filter(Boolean).join(' ');

@@ -334,12 +334,16 @@ function NodeView(props: { node: Node }) {
           // 線幅は 0.1mm しかないので、そのままだと画面で見えない。
           // 実寸は書き出しのときの値を使い、画面では見える太さで描く
           const shown = () => Math.max(n.stroke?.widthMm ?? 0.1, screenToMm(1.6));
+          // 部品（穴）は中もつかめるようにする。φ4mm の円は画面で 10px ほどしか
+          // なく、線そのものをつまませるのは子どもには無理がある。
+          // 見た目は透明なので変わらず、書き出しは常に fill="none"（SPEC 8.1）
+          const grabbable = () => n.origin?.type === 'part';
           return (
             <path
               data-node={n.id}
               d={subpathsToPathData(n.subpaths)}
               transform={M.toSvg(n.transform)}
-              fill="none"
+              fill={grabbable() ? 'transparent' : 'none'}
               stroke={n.stroke?.color ?? 'var(--cut)'}
               stroke-width={shown()}
               vector-effect="none"

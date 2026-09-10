@@ -19,9 +19,11 @@ export function TopBar(props: {
   onRemoveBackground: () => void;
   onExport: () => void;
   onMakeCutline: () => void;
+  onMakeHole: () => void;
   busy: boolean;
   hasArtwork: boolean;
   canRemoveBackground: boolean;
+  canMakeHole: boolean;
 }) {
   return (
     <div class="topbar">
@@ -48,6 +50,15 @@ export function TopBar(props: {
         title={props.canRemoveBackground ? undefined : t('matting.needImage')}
       >
         {t('action.makeCutline')}
+      </button>
+
+      <button
+        class="tbtn"
+        onClick={props.onMakeHole}
+        disabled={props.busy || !props.canMakeHole}
+        title={props.canMakeHole ? undefined : t('hole.needCutline')}
+      >
+        {t('action.makeHole')}
       </button>
 
       <span style={{ width: '8px' }} />

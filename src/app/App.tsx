@@ -17,10 +17,12 @@ import {
 } from '~/document/store';
 import {
   addCutline,
+  addHole,
   applyMatting,
   deleteNode,
   importImage as importImageCommand,
 } from '~/document/commands';
+import { buildHole, findHole, newHoleNode } from '~/document/parts';
 import type { Anchor, Asset, ImageNode, PathNode } from '~/document/types';
 import { ASSUMED_DPI, pxToMm } from '~/document/types';
 import { generateCutline, importImage, pickImageFile, removeBackground } from '~/ipc';
@@ -31,6 +33,7 @@ import {
   cutlineBusy,
   cutlineParams,
   edgeTighten,
+  holePart,
   mattingModel,
   mattingProgress,
   refreshModels,
@@ -59,6 +62,7 @@ export default function App() {
   const everythingCutOut = () => hasArtwork() && imageNodes().every((n) => n.matting);
   const hasCutline = () =>
     doc().layers.some((l) => l.role === 'cutline' && l.nodes.length > 0);
+  const hasHole = () => findHole(doc()) !== null;
 
   onMount(() => {
     initI18n();
@@ -253,6 +257,24 @@ export default function App() {
     }
   }
 
+  /**
+   * キーホルダーの穴をあける。
+   *
+   * 置き場所は切る線の内側から自動で選ぶ。上から吊るすものなので、
+   * 条件を満たすうちのいちばん上に置く（SPEC 7.6）。
+   */
+  function onMakeHole() {
+    setError(null);
+    const shape = buildHole(doc(), holePart());
+    if (!shape.ok) {
+      setError(t('err.holeNoRoom'));
+      return;
+    }
+    const node = newHoleNode(shape, t('hole.title'));
+    run(addHole(node, findHole(doc())?.node.id ?? null));
+    selectOnly(node.id);
+  }
+
   /** すでに切る線があれば、作り直しで置き換える */
   function existingCutlineId(): string | null {
     const layer = doc().layers.find((l) => l.role === 'cutline');
@@ -277,9 +299,11 @@ export default function App() {
         onRemoveBackground={() => void onRemoveBackground()}
         onExport={() => void onExport()}
         onMakeCutline={() => void onMakeCutline()}
+        onMakeHole={onMakeHole}
         busy={busy() || cutlineBusy()}
         hasArtwork={hasArtwork()}
         canRemoveBackground={targetImage() !== null}
+        canMakeHole={hasCutline()}
       />
       <ToolRail active={tool()} onChange={setTool} />
       <Canvas onRequestImport={() => void onImport()} />
@@ -315,11 +339,13 @@ export default function App() {
       {/* つぎにやることを常に見せる（SPEC 9.2） */}
       <Show when={hasArtwork() && !mattingProgress()}>
         <div class="next-hint">
-          {hasCutline()
-            ? t('next.export')
-            : everythingCutOut()
+          {!everythingCutOut()
+            ? t('next.removeBg')
+            : !hasCutline()
               ? t('next.cutline')
-              : t('next.removeBg')}
+              : !hasHole()
+                ? t('next.hole')
+                : t('next.export')}
         </div>
       </Show>
     </div>

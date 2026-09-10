@@ -11,6 +11,7 @@
  */
 
 import type { Anchor, Doc, Node, PathNode, Point, SubPath } from '~/document/types';
+import { KAPPA } from '~/geometry/path';
 import * as M from '~/geometry/matrix';
 
 export interface CutlineSvgOptions {
@@ -82,8 +83,7 @@ ${body}
 
 /** 板の外形（角丸の長方形）。三次ベジェだけで書く */
 function boardOutline(w: number, h: number, r: number): string {
-  const k = 0.5522847498307936; // 円をベジェで近似するときの定数
-  const c = r * k;
+  const c = r * KAPPA;
   return [
     `M ${n(r)} 0`,
     `L ${n(w - r)} 0`,

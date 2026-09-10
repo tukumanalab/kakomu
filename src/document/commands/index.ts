@@ -5,7 +5,18 @@
 
 import type { Command } from '../store';
 import { withAsset, withNode, withNodeAdded, withNodeRemoved, withLayer, findNode } from '../store';
-import type { Asset, Doc, ImageNode, LayerRole, Matrix, Node, NodeId, PathNode } from '../types';
+import type {
+  Asset,
+  Doc,
+  HolePart,
+  ImageNode,
+  LayerRole,
+  Matrix,
+  Node,
+  NodeId,
+  PathNode,
+  SubPath,
+} from '../types';
 
 /** 絵を入れる */
 export function importImage(asset: Asset, node: ImageNode): Command {
@@ -119,4 +130,41 @@ export function addCutline(node: PathNode, replacing: NodeId | null): Command {
     },
     revert: (d) => withNodeRemoved(d, node.id),
   };
+}
+
+/**
+ * キーホルダーの穴を置く。
+ *
+ * 部品のレイヤーに、それ自身のノードとして入れる（SPEC 7.7 の役割分け）。
+ * 書き出しでは切る線と同じ群・同じ色にまとまるので、加工機からは
+ * ひとつづきの切るデータに見える（SPEC 7.6）。
+ */
+export function addHole(node: PathNode, replacing: NodeId | null): Command {
+  return {
+    labelKey: 'cmd.makeHole',
+    apply: (d) => {
+      const cleared = replacing ? withNodeRemoved(d, replacing) : d;
+      return withNodeAdded(cleared, 'parts', node);
+    },
+    revert: (d) => withNodeRemoved(d, node.id),
+  };
+}
+
+/**
+ * 穴の大きさや位置を変える。
+ * 部品はパラメトリックなので、値を変えたらその場で作り直す（SPEC 7.6）。
+ */
+export function updateHole(
+  id: NodeId,
+  before: { transform: Matrix; subpaths: SubPath[]; part: HolePart },
+  after: { transform: Matrix; subpaths: SubPath[]; part: HolePart },
+  coalesceKey?: string,
+): Command {
+  const set = (v: typeof before) => (d: Doc) =>
+    withNode(d, id, (n) =>
+      n.type === 'path'
+        ? { ...n, transform: v.transform, subpaths: v.subpaths, origin: { type: 'part', part: v.part } }
+        : n,
+    );
+  return { labelKey: 'cmd.changeHole', coalesceKey, apply: set(after), revert: set(before) };
 }

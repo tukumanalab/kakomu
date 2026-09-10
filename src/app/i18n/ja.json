@@ -113,5 +113,20 @@
   "issue.minHole": "内側の穴が小さすぎます（{d}ミリ）。機械の刃が入りません",
   "cmd.makeCutline": "切る線を作る",
   "err.cutlineFailed": "切る線を作れませんでした",
-  "unit.mm2": "平方ミリ"
+  "unit.mm2": "平方ミリ",
+  "hole.title": "キーホルダーの穴",
+  "hole.diameter": "穴の大きさ",
+  "hole.margin": "ふちからの距離",
+  "hole.place": "自動で置き直す",
+  "hole.placed": "切る線の内側で、いちばん上に置きました。ドラッグで動かせます",
+  "hole.needCutline": "先に「囲む」を押して、切る線を作ってください",
+  "hole.none": "まだ穴をあけていません",
+  "action.makeHole": "穴をあける",
+  "next.hole": "次は、穴をあけます",
+  "cmd.makeHole": "穴をあける",
+  "cmd.changeHole": "穴を変える",
+  "err.holeNoRoom": "穴を置ける場所がありません。ふちの太さを増やすか、穴を小さくしてください",
+  "issue.holeTooSmall": "穴が小さすぎます（φ{d}ミリ）。機械の刃が入りません",
+  "issue.holeTooCloseToEdge": "穴がふちに近すぎます（{d}ミリ）。ここは折れやすいので、穴を内側に動かしてください",
+  "issue.holeOutside": "穴が切る線からはみ出しています。内側に動かしてください"
 }

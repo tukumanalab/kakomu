@@ -6,6 +6,8 @@
 import { createSignal } from 'solid-js';
 import { listModels } from '~/ipc';
 import type { CutlineIssue, MattingProgress, ModelInfo } from '~/ipc';
+import type { HolePart } from '~/document/types';
+import { DEFAULT_HOLE_PART } from '~/document/types';
 
 export type MattingModel = 'isnet-general-use' | 'isnet-anime';
 
@@ -43,6 +45,14 @@ export {
   cutlineSegments,
   setCutlineSegments,
 };
+
+/** キーホルダーの穴。SPEC 7.6 の既定値 */
+const [holePart, setHolePart] = createSignal<HolePart>({
+  kind: 'hole',
+  ...DEFAULT_HOLE_PART,
+});
+
+export { holePart, setHolePart };
 
 /** 実行中だけ値が入る */
 const [mattingProgress, setMattingProgress] = createSignal<MattingProgress | null>(null);
