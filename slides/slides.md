@@ -54,7 +54,13 @@ layout: default
 class: machine-slide
 ---
 
+<div class="machine-head">
+
 # わたしの omarchy マシン
+
+<p class="spec">GMKtec ミニPC AMD Ryzen7 8845HS搭載<br><span class="price">￥76,580</span></p>
+
+</div>
 
 <figure class="machine">
   <img src="./omarchy.jpg" alt="GMKtec のミニ PC">
@@ -127,6 +133,41 @@ class: aur-slide
 <figure class="screenshot">
   <img src="./aur-register.png" alt="aur.archlinux.org/register の「New account registration is temporarily closed」の画面">
 </figure>
+
+---
+layout: default
+class: remote-slide
+---
+
+# omarchy にリモートでつなぐ
+
+<p class="lede">Sunshine × Moonlight を、Tailscale の上で使う</p>
+
+<div class="arch remote">
+  <section class="box client">
+    <header><span class="tag">Moonlight</span>手元のパソコン</header>
+    <ul>
+      <li>送られてきた画面を表示する</li>
+      <li>キーボードとマウスの操作を送る</li>
+    </ul>
+  </section>
+
+  <div class="bridge">
+    <p class="bridge-title">Tailscale</p>
+    <p class="wire back"><span>←</span>画面</p>
+    <p class="wire">入力<span>→</span></p>
+    <p class="bridge-note">ポートを開けなくても<br>別のネットワークから届く</p>
+  </div>
+
+  <section class="box host">
+    <header><span class="tag">Sunshine</span>omarchy マシン</header>
+    <ul>
+      <li>画面を取り込んで、動画にして送る</li>
+      <li>届いた操作をそのまま反映する</li>
+      <li>kakomu はこちらで動いている</li>
+    </ul>
+  </section>
+</div>
 
 ---
 layout: center

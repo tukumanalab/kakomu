@@ -167,6 +167,33 @@
 
 /* ---------------------------------------------------------------- 3. マシン */
 
+/* タイトルの横に機種を並べる */
+.machine-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.slidev-layout.machine-slide .machine-head h1 {
+  margin: 0;
+}
+
+/* テーマの h1 + p（寄せて薄くする）を打ち消す */
+.slidev-layout.machine-slide .spec {
+  margin: 0;
+  opacity: 1;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--cut);
+}
+
+.machine-head .price {
+  font-weight: 700;
+  color: var(--fg);
+}
+
 .machine {
   display: flex;
   justify-content: center;
@@ -355,7 +382,36 @@
   outline-offset: 8px;
 }
 
-/* ---------------------------------------------------------------- 6. デモ */
+/* ---------------------------------------------------------------- 6. リモート */
+
+/* 4. アーキテクチャの箱と矢印を使い回す */
+.slidev-layout.remote-slide .lede {
+  margin: 0.4rem 0 2.4rem;
+  opacity: 1;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.arch.remote {
+  grid-template-columns: 1fr 13rem 1fr;
+}
+
+.arch.remote .box {
+  font-size: 1rem;
+}
+
+.arch.remote .box header {
+  font-size: 1.1rem;
+}
+
+.arch.remote .bridge {
+  font-size: 0.9rem;
+}
+
+.box.client { --accent: var(--front); }
+.box.host { --accent: var(--cut); }
+
+/* ---------------------------------------------------------------- 7. デモ */
 
 .demo-slide {
   text-align: center;
@@ -370,7 +426,7 @@
   font-size: 3.6rem;
 }
 
-/* ---------------------------------------------------------------- 7–8. 動画 */
+/* ---------------------------------------------------------------- 8–9. 動画 */
 
 /* 左に説明、右に縦長の動画 */
 .slidev-layout.media-slide {
@@ -419,7 +475,7 @@
   outline-offset: 8px;
 }
 
-/* ---------------------------------------------------------------- 9. おわり */
+/* ---------------------------------------------------------------- 10. おわり */
 
 /* タイトルと同じ枠を使い、終わりだとわかるようにする */
 .slidev-layout.end-slide h1 {
