@@ -23,6 +23,11 @@ makedepends=('rust' 'cargo' 'nodejs' 'pnpm')
 provides=('kakomu')
 conflicts=('kakomu-bin')
 
+# ring クレートは LTO 有効だとアセンブリで定義している ring_core_* シンボルを
+# 解決できず、ort-sys のビルドスクリプトのリンクで落ちる。
+# Arch の makepkg.conf は OPTIONS に lto を含むので、ここで打ち消す
+options=('!lto')
+
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz")
 sha256sums=('68f259cf8b4ffa2532a8d42f0f7f8168ede6cf37b6328c5998e0d9a6f7129a9e')
 
