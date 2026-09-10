@@ -3,7 +3,7 @@
 # ビルド済みの binary を Releases から取ってきて入れる版。
 # ソースからビルドする版は AUR の kakomu にある。
 pkgname=kakomu-bin
-pkgver=0.2.0
+pkgver=0.2.1
 pkgrel=1
 pkgdesc="アクリルスタンド・アクリルキーホルダーを作るためのベクターエディタ"
 arch=('x86_64')
@@ -33,7 +33,7 @@ source=(
   "LICENSE-${pkgver}::${url}/raw/v${pkgver}/LICENSE"
 )
 # 1 つめが deb、2 つめが LICENSE。update.sh が書き換える
-sha256sums=('9933ee2f0458b2bcf3f666ab2f541968b5bc868c7184410ce18f5d5a00c9a102' '78c384537f1ac73a60cade835693da1d45950de276a958f14ab8fbfa56799a7e')
+sha256sums=('db3e3c43b92136cdcd8cb9a1f3eddc6d3d2ed7ab6e83f69a9d159a7a24d0ddb4' '78c384537f1ac73a60cade835693da1d45950de276a958f14ab8fbfa56799a7e')
 
 package() {
   # deb は ar 書庫。中身の data.tar.* を展開すれば所定の場所に収まる。

@@ -2,7 +2,7 @@
 
 # ソースからビルドする版。ビルド済みを入れたいだけなら kakomu-bin のほうが速い。
 pkgname=kakomu
-pkgver=0.2.0
+pkgver=0.2.1
 pkgrel=1
 pkgdesc="アクリルスタンド・アクリルキーホルダーを作るためのベクターエディタ"
 arch=('x86_64')
@@ -29,7 +29,7 @@ conflicts=('kakomu-bin')
 options=('!lto')
 
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz")
-sha256sums=('e9b7b7c167a34a7526fc7e064856c489451c1e4f6d083edaafc485bc9c5918ea')
+sha256sums=('b1409e45280461d861425f57f9db426039701e23711c3be6c2edb591a00b4639')
 
 prepare() {
   cd "${srcdir}/${pkgname}-${pkgver}"
