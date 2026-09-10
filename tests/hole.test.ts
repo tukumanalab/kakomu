@@ -10,7 +10,6 @@ import {
   clearance,
   flattenSubpaths,
   placeHole,
-  placeHoleNear,
 } from '../src/geometry/hole';
 import { subpathsToPathData } from '../src/geometry/path';
 import { IDENTITY } from '../src/document/types';
@@ -134,39 +133,5 @@ describe('穴のかたち', () => {
   it('直径を変えると、その半径の円になる', () => {
     const sub = circleSubPath(1);
     expect(Math.hypot(sub.anchors[0]!.p.x, sub.anchors[0]!.p.y)).toBeCloseTo(1, 6);
-  });
-});
-
-describe('押した場所に置く（穴の道具）', () => {
-  const spec = { diameterMm: 4, marginMm: 3 };
-  const polys = flattenSubpaths([rect(0, 0, 40, 60)], IDENTITY);
-
-  it('条件を満たす場所を押したら、そこにそのまま置く', () => {
-    const placed = placeHoleNear(polys, spec, { x: 20, y: 30 });
-    if (!placed.ok) throw new Error('置けるはず');
-    expect(placed.center).toEqual({ x: 20, y: 30 });
-  });
-
-  it('ふちに寄りすぎた場所を押したら、いちばん近い置ける場所に寄せる', () => {
-    // 左のふちから 1mm。中心から 5mm は要るので、x=5 まで押し戻される
-    const placed = placeHoleNear(polys, spec, { x: 1, y: 30 });
-    if (!placed.ok) throw new Error('置けるはず');
-    expect(placed.center.x).toBeCloseTo(5, 1);
-    expect(placed.center.y).toBeCloseTo(30, 1);
-    expect(placed.marginMm).toBeGreaterThanOrEqual(spec.marginMm - 1e-6);
-  });
-
-  it('切る線の外を押しても、内側に吸い付く', () => {
-    const placed = placeHoleNear(polys, spec, { x: -20, y: 10 });
-    if (!placed.ok) throw new Error('置けるはず');
-    expect(clearance(placed.center, polys)).toBeGreaterThanOrEqual(5 - 1e-6);
-    // 押した場所に近い側（左上）に来る
-    expect(placed.center.x).toBeLessThan(10);
-    expect(placed.center.y).toBeLessThan(15);
-  });
-
-  it('どこにも置けない形なら断る', () => {
-    const narrow = flattenSubpaths([rect(0, 0, 8, 60)], IDENTITY);
-    expect(placeHoleNear(narrow, spec, { x: 4, y: 30 }).ok).toBe(false);
   });
 });

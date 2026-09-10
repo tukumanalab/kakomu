@@ -339,17 +339,12 @@ export default function App() {
   }
 
   /**
-   * 「穴」の道具で押した場所に置く。
-   * 切る線があればその内側に寄せる。すでに穴があれば、それを動かす
-   * （いまは穴を 1 つだけ持つ）。
+   * 「穴」の道具で押した場所に置く。寄せずにそのまま置く。
+   * すでに穴があれば、それを動かす（いまは穴を 1 つだけ持つ）。
    */
   function onPlaceHole(p: Point) {
     setError(null);
-    const shape = buildHoleAt(doc(), holePart(), p);
-    if (!shape.ok) {
-      setError(t('err.holeNoRoom'));
-      return;
-    }
+    const shape = buildHoleAt(holePart(), p);
     const existing = findHole(doc());
     if (existing) {
       run(

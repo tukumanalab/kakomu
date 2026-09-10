@@ -137,5 +137,5 @@
   "node.selectPath": "線を押して選んでください",
   "cutline.overwriteYes": "作り直す",
   "cutline.overwriteNo": "やめる",
-  "hole.toolHint": "置きたいところを押してください。切る線の内側に寄せます"
+  "hole.toolHint": "置きたいところを押してください。ふちに近すぎればチェックに出ます"
 }

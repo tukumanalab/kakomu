@@ -158,58 +158,6 @@ export function placeHole(polys: Point[][], spec: HoleSpec): Placement {
   return { ok: true, center: refined, marginMm: clearance(refined, polys) - radius };
 }
 
-/**
- * 押した場所のなるべく近くに置く（「穴」の道具用）。
- *
- * 押した場所がそのまま条件を満たすならそこに置く。満たさなければ、
- * 置ける場所のうち押した場所にいちばん近いところへ寄せる（SPEC 7.6）。
- * 子どもが切る線のすぐ外を押しても、内側に吸い付く。
- */
-export function placeHoleNear(polys: Point[][], spec: HoleSpec, target: Point): Placement {
-  const radius = spec.diameterMm / 2;
-  const need = radius + spec.marginMm;
-
-  const here = clearance(target, polys);
-  if (here >= need) return { ok: true, center: target, marginMm: here - radius };
-
-  const box = bounds(polys);
-  if (!box) return { ok: false, bestMarginMm: -Infinity };
-
-  const step = clamp(Math.min(box.w, box.h) / 40, 0.25, 1.0);
-  let best: Point | null = null;
-  let bestDist = Infinity;
-  let bestClear = -Infinity;
-
-  for (let y = box.y; y <= box.y + box.h; y += step) {
-    for (let x = box.x; x <= box.x + box.w; x += step) {
-      const c = clearance({ x, y }, polys);
-      if (c > bestClear) bestClear = c;
-      if (c < need) continue;
-      const dd = dist({ x, y }, target);
-      if (dd < bestDist) {
-        bestDist = dd;
-        best = { x, y };
-      }
-    }
-  }
-  if (!best) return { ok: false, bestMarginMm: bestClear - radius };
-
-  // 押した場所へ向かって、置ける限り詰める
-  let cur = best;
-  for (let s = step / 2; s >= FINEST_STEP_MM; s /= 2) {
-    for (let guard = 0; guard < 64; guard++) {
-      const dx = target.x - cur.x;
-      const dy = target.y - cur.y;
-      const len = Math.hypot(dx, dy);
-      if (len <= s) break;
-      const cand = { x: cur.x + (dx / len) * s, y: cur.y + (dy / len) * s };
-      if (clearance(cand, polys) < need) break;
-      cur = cand;
-    }
-  }
-  return { ok: true, center: cur, marginMm: clearance(cur, polys) - radius };
-}
-
 /** 上へ、そして真ん中へ、置ける限り寄せる */
 function refine(
   start: Point,
