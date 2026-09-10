@@ -168,3 +168,32 @@ export function updateHole(
     );
   return { labelKey: 'cmd.changeHole', coalesceKey, apply: set(after), revert: set(before) };
 }
+
+/**
+ * 点やハンドルを動かした結果を当てる。
+ *
+ * 切る線を手で直したら origin.manuallyEdited を立てる。作り直すときに
+ * 「手で直したところが元に戻る」と確認を出すため（SPEC 7.4）。
+ * 戻したときは、立てる前の値に戻す。
+ */
+export function editSubpaths(
+  id: NodeId,
+  before: { subpaths: SubPath[]; manuallyEdited: boolean },
+  after: SubPath[],
+  labelKey: string,
+  coalesceKey?: string,
+): Command {
+  const set = (subpaths: SubPath[], manuallyEdited: boolean) => (d: Doc) =>
+    withNode(d, id, (n) => {
+      if (n.type !== 'path') return n;
+      const origin =
+        n.origin?.type === 'cutline' ? { ...n.origin, manuallyEdited } : n.origin;
+      return { ...n, subpaths, origin };
+    });
+  return {
+    labelKey,
+    coalesceKey,
+    apply: set(after, true),
+    revert: set(before.subpaths, before.manuallyEdited),
+  };
+}

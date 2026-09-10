@@ -2,13 +2,14 @@ import { For, Show } from 'solid-js';
 import { t } from '~/app/i18n';
 import { canRedo, canUndo, doc, redo, undo } from '~/document/store';
 import { fitCanvas, zoomByStep, zoomToActualSize } from '~/canvas/viewport';
+import type { ToolId } from '~/app/session';
 
-export type ToolId = 'select' | 'node' | 'path' | 'hole' | 'stand';
+export type { ToolId };
 
-/** M0 で実際に動くのは「えらぶ」だけ。他はまだ押せないことを見せる */
+/** 動くのは「選択」と「点」。他はまだ押せないことを見せる */
 const TOOLS: { id: ToolId; glyph: string; ready: boolean }[] = [
   { id: 'select', glyph: '↖', ready: true },
-  { id: 'node', glyph: '◆', ready: false },
+  { id: 'node', glyph: '◆', ready: true },
   { id: 'path', glyph: '✎', ready: false },
   { id: 'hole', glyph: '○', ready: false },
   { id: 'stand', glyph: '⊥', ready: false },

@@ -4,11 +4,13 @@
  */
 
 import { For, Show, createMemo, createSignal, onCleanup, onMount } from 'solid-js';
-import type { ImageNode, Layer, Node, PathNode, Point } from '~/document/types';
+import type { ImageNode, Layer, Node, PathNode, Point, SubPath } from '~/document/types';
 import { subpathsToPathData } from '~/geometry/path';
+import { moveAnchor, moveHandle } from '~/geometry/edit';
+import type { AnchorRef } from '~/geometry/edit';
 import { displayAssetId, doc, findNode, isSelected, run, selectOnly, selection } from '~/document/store';
-import { compareOriginal } from '~/app/session';
-import { setImageBox, setTransform } from '~/document/commands';
+import { compareOriginal, selectedAnchor, setSelectedAnchor, tool } from '~/app/session';
+import { editSubpaths, setImageBox, setTransform } from '~/document/commands';
 import * as M from '~/geometry/matrix';
 import { fitCanvas, panBy, screenToMm, setSize, toMm, viewBox, zoomAt } from './viewport';
 
@@ -24,7 +26,22 @@ type Drag =
       corner: Corner;
       before: { transform: M.Matrix; widthMm: number; heightMm: number };
     }
-  | { kind: 'rotate'; id: string; before: M.Matrix; centerWorld: Point };
+  | { kind: 'rotate'; id: string; before: M.Matrix; centerWorld: Point }
+  | {
+      kind: 'anchor';
+      id: string;
+      ref: AnchorRef;
+      /** つかんだ位置（ローカル mm）。ここからの差分で動かす */
+      startLocal: Point;
+      before: { subpaths: SubPath[]; manuallyEdited: boolean };
+    }
+  | {
+      kind: 'handle';
+      id: string;
+      ref: AnchorRef;
+      which: 'in' | 'out';
+      before: { subpaths: SubPath[]; manuallyEdited: boolean };
+    };
 
 export default function Canvas(props: { onRequestImport: () => void }) {
   let host!: HTMLDivElement;
@@ -98,8 +115,47 @@ export default function Canvas(props: { onRequestImport: () => void }) {
     if (e.button !== 0) return;
 
     const target = e.target as Element;
-    const handle = target.closest('[data-handle]');
     const selId = selection()[0];
+
+    // 「点」の道具では、点とハンドルをいちばん先に見る
+    if (tool() === 'node' && selId) {
+      const found = findNode(d(), selId);
+      if (found && found.node.type === 'path') {
+        const n = found.node;
+        const before = {
+          subpaths: n.subpaths,
+          manuallyEdited: n.origin?.type === 'cutline' && n.origin.manuallyEdited,
+        };
+        const hnd = target.closest('[data-hnd]');
+        if (hnd) {
+          const [sub, index, which] = hnd.getAttribute('data-hnd')!.split(':');
+          setDrag({
+            kind: 'handle',
+            id: selId,
+            ref: { sub: Number(sub), index: Number(index) },
+            which: which as 'in' | 'out',
+            before,
+          });
+          return;
+        }
+        const pt = target.closest('[data-anchor]');
+        if (pt) {
+          const [sub, index] = pt.getAttribute('data-anchor')!.split(':').map(Number);
+          const ref = { sub: sub!, index: index! };
+          setSelectedAnchor({ nodeId: selId, ...ref });
+          setDrag({
+            kind: 'anchor',
+            id: selId,
+            ref,
+            startLocal: M.apply(M.invert(n.transform), mmPoint(e)),
+            before,
+          });
+          return;
+        }
+      }
+    }
+
+    const handle = target.closest('[data-handle]');
 
     if (handle && selId) {
       const kind = handle.getAttribute('data-handle');
@@ -127,6 +183,7 @@ export default function Canvas(props: { onRequestImport: () => void }) {
 
     const hit = target.closest('[data-node]');
     const id = hit?.getAttribute('data-node') ?? null;
+    if (id !== selId) setSelectedAnchor(null);
     selectOnly(id);
     if (id) {
       const found = findNode(d(), id);
@@ -197,6 +254,46 @@ export default function Canvas(props: { onRequestImport: () => void }) {
         return;
       }
 
+      case 'anchor': {
+        const found = findNode(d(), st.id);
+        if (!found || found.node.type !== 'path') return;
+        const local = M.apply(M.invert(found.node.transform), mmPoint(e));
+        const delta = { x: local.x - st.startLocal.x, y: local.y - st.startLocal.y };
+        if (delta.x === 0 && delta.y === 0) return;
+        const next = moveAnchor(st.before.subpaths, st.ref, delta);
+        run(
+          editSubpaths(
+            st.id,
+            st.before,
+            next,
+            'cmd.moveAnchor',
+            `anchor:${st.id}:${st.ref.sub}:${st.ref.index}`,
+          ),
+        );
+        return;
+      }
+
+      case 'handle': {
+        const found = findNode(d(), st.id);
+        if (!found || found.node.type !== 'path') return;
+        const anchor = st.before.subpaths[st.ref.sub]?.anchors[st.ref.index];
+        if (!anchor) return;
+        const local = M.apply(M.invert(found.node.transform), mmPoint(e));
+        // ハンドルは点からの相対で持つ
+        const handle = { x: local.x - anchor.p.x, y: local.y - anchor.p.y };
+        const next = moveHandle(st.before.subpaths, st.ref, st.which, handle);
+        run(
+          editSubpaths(
+            st.id,
+            st.before,
+            next,
+            'cmd.moveHandle',
+            `handle:${st.id}:${st.ref.sub}:${st.ref.index}:${st.which}`,
+          ),
+        );
+        return;
+      }
+
       case 'rotate': {
         const found = findNode(d(), st.id);
         if (!found || found.node.type !== 'image') return;
@@ -244,6 +341,13 @@ export default function Canvas(props: { onRequestImport: () => void }) {
     if (!id) return null;
     const found = findNode(d(), id);
     return found && found.node.type === 'image' ? found.node : null;
+  });
+
+  const selectedPath = createMemo<PathNode | null>(() => {
+    const id = selection()[0];
+    if (!id) return null;
+    const found = findNode(d(), id);
+    return found && found.node.type === 'path' ? found.node : null;
   });
 
   const isEmpty = createMemo(() => d().layers.every((l) => l.nodes.length === 0));
@@ -313,6 +417,11 @@ export default function Canvas(props: { onRequestImport: () => void }) {
             />
           )}
         </Show>
+
+        {/* 「点」の道具: 選んでいる線の点 */}
+        <Show when={tool() === 'node' && selectedPath()}>
+          {(n) => <AnchorEditor node={n()} handleMm={handleMm()} hairline={hairline()} />}
+        </Show>
       </svg>
 
       <Show when={isEmpty()}>
@@ -379,6 +488,120 @@ function NodeView(props: { node: Node }) {
         })()}
       </Show>
     </Show>
+  );
+}
+
+// ------------------------------------------------------------------ 点の編集
+
+/**
+ * 選んでいる線の点を出す。ハンドルは選んだ点のぶんだけ。
+ * 切る線は点が 20〜30 あるので、全部にハンドルを出すと線が見えなくなる。
+ */
+function AnchorEditor(props: { node: PathNode; handleMm: number; hairline: number }) {
+  const world = (p: Point) => M.apply(props.node.transform, p);
+  const r = () => props.handleMm * 0.38;
+  /** つかむ範囲は見た目より広くとる。点は小さいので */
+  const grab = () => props.handleMm * 0.8;
+
+  const current = () => {
+    const a = selectedAnchor();
+    return a && a.nodeId === props.node.id ? a : null;
+  };
+
+  return (
+    <g>
+      <For each={props.node.subpaths}>
+        {(sub, si) => (
+          <For each={sub.anchors}>
+            {(a, ai) => {
+              const p = () => world(a.p);
+              const selected = () => {
+                const c = current();
+                return c !== null && c.sub === si() && c.index === ai();
+              };
+              const hin = () => world({ x: a.p.x + a.in.x, y: a.p.y + a.in.y });
+              const hout = () => world({ x: a.p.x + a.out.x, y: a.p.y + a.out.y });
+              return (
+                <>
+                  {/* 選んだ点だけ、ハンドルを出す */}
+                  <Show when={selected()}>
+                    <line
+                      x1={p().x}
+                      y1={p().y}
+                      x2={hin().x}
+                      y2={hin().y}
+                      stroke="var(--cut)"
+                      stroke-width={props.hairline}
+                    />
+                    <line
+                      x1={p().x}
+                      y1={p().y}
+                      x2={hout().x}
+                      y2={hout().y}
+                      stroke="var(--cut)"
+                      stroke-width={props.hairline}
+                    />
+                    <circle
+                      data-hnd={`${si()}:${ai()}:in`}
+                      cx={hin().x}
+                      cy={hin().y}
+                      r={grab()}
+                      fill="transparent"
+                      style={{ cursor: 'grab' }}
+                    />
+                    <circle
+                      cx={hin().x}
+                      cy={hin().y}
+                      r={r() * 0.8}
+                      fill="var(--surface)"
+                      stroke="var(--cut)"
+                      stroke-width={props.hairline * 1.5}
+                      pointer-events="none"
+                    />
+                    <circle
+                      data-hnd={`${si()}:${ai()}:out`}
+                      cx={hout().x}
+                      cy={hout().y}
+                      r={grab()}
+                      fill="transparent"
+                      style={{ cursor: 'grab' }}
+                    />
+                    <circle
+                      cx={hout().x}
+                      cy={hout().y}
+                      r={r() * 0.8}
+                      fill="var(--surface)"
+                      stroke="var(--cut)"
+                      stroke-width={props.hairline * 1.5}
+                      pointer-events="none"
+                    />
+                  </Show>
+                  {/* 点。つかむ範囲（透明）と見た目を分ける */}
+                  <circle
+                    data-anchor={`${si()}:${ai()}`}
+                    cx={p().x}
+                    cy={p().y}
+                    r={grab()}
+                    fill="transparent"
+                    style={{ cursor: 'move' }}
+                  />
+                  <rect
+                    x={p().x - r()}
+                    y={p().y - r()}
+                    width={r() * 2}
+                    height={r() * 2}
+                    fill={selected() ? 'var(--cut)' : 'var(--surface)'}
+                    stroke="var(--cut)"
+                    stroke-width={props.hairline * 1.5}
+                    pointer-events="none"
+                  />
+                </>
+              );
+            }}
+          </For>
+        )}
+      </For>
+    </g>
   );
 }
 

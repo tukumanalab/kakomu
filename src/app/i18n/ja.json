@@ -128,5 +128,13 @@
   "err.holeNoRoom": "穴を置ける場所がありません。ふちの太さを増やすか、穴を小さくしてください",
   "issue.holeTooSmall": "穴が小さすぎます（φ{d}ミリ）。機械の刃が入りません",
   "issue.holeTooCloseToEdge": "穴がふちに近すぎます（{d}ミリ）。ここは折れやすいので、穴を内側に動かしてください",
-  "issue.holeOutside": "穴が切る線からはみ出しています。内側に動かしてください"
+  "issue.holeOutside": "穴が切る線からはみ出しています。内側に動かしてください",
+  "cmd.moveAnchor": "点を動かす",
+  "cmd.moveHandle": "曲がりを変える",
+  "cmd.deleteAnchor": "点を消す",
+  "node.hint": "点をドラッグして直します。選んだ点は Delete で消せます",
+  "node.tooFew": "これ以上は点を消せません。3 つは要ります",
+  "node.selectPath": "線を押して選んでください",
+  "cutline.overwriteYes": "作り直す",
+  "cutline.overwriteNo": "やめる"
 }

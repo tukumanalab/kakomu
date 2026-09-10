@@ -6,8 +6,21 @@
 import { createSignal } from 'solid-js';
 import { listModels } from '~/ipc';
 import type { CutlineIssue, MattingProgress, ModelInfo } from '~/ipc';
-import type { HolePart } from '~/document/types';
+import type { HolePart, NodeId } from '~/document/types';
 import { DEFAULT_HOLE_PART } from '~/document/types';
+import type { AnchorRef } from '~/geometry/edit';
+
+export type ToolId = 'select' | 'node' | 'path' | 'hole' | 'stand';
+
+/** いま使っている道具 */
+const [tool, setTool] = createSignal<ToolId>('select');
+
+/** 「点」の道具で選んでいる点。ハンドルはこの点のぶんだけ出す */
+const [selectedAnchor, setSelectedAnchor] = createSignal<
+  (AnchorRef & { nodeId: NodeId }) | null
+>(null);
+
+export { tool, setTool, selectedAnchor, setSelectedAnchor };
 
 export type MattingModel = 'isnet-general-use' | 'isnet-anime';
 

@@ -3,7 +3,6 @@ import Canvas from '~/canvas/Canvas';
 import { Inspector } from '~/panels/Inspector';
 import { StatusBar } from '~/panels/StatusBar';
 import { TopBar, ToolRail } from '~/panels/Toolbar';
-import type { ToolId } from '~/panels/Toolbar';
 import { initI18n, t } from './i18n';
 import {
   doc,
@@ -20,8 +19,10 @@ import {
   addHole,
   applyMatting,
   deleteNode,
+  editSubpaths,
   importImage as importImageCommand,
 } from '~/document/commands';
+import { deleteAnchor } from '~/geometry/edit';
 import { buildHole, findHole, newHoleNode } from '~/document/parts';
 import type { Anchor, Asset, ImageNode, PathNode } from '~/document/types';
 import { ASSUMED_DPI, pxToMm } from '~/document/types';
@@ -37,19 +38,25 @@ import {
   mattingModel,
   mattingProgress,
   refreshModels,
+  selectedAnchor,
   setCompareOriginal,
   setCutlineBusy,
   setCutlineIssues,
   setCutlineSegments,
   setMattingProgress,
+  setSelectedAnchor,
+  setTool,
+  tool,
 } from './session';
+import type { ToolId } from './session';
 import * as M from '~/geometry/matrix';
 
 export default function App() {
-  const [tool, setTool] = createSignal<ToolId>('select');
   const [busy, setBusy] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
   const [exported, setExported] = createSignal<ExportResult | null>(null);
+  /** 手で直した切る線を作り直してよいか、聞いているあいだ true */
+  const [confirmRemake, setConfirmRemake] = createSignal(false);
 
   const imageNodes = createMemo<ImageNode[]>(() =>
     doc()
@@ -79,9 +86,14 @@ export default function App() {
         return;
       }
       if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        const a = selectedAnchor();
+        if (tool() === 'node' && a) {
+          removeAnchor(a);
+          return;
+        }
         const id = selection()[0];
         if (!id) return;
-        e.preventDefault();
         const cmd = deleteNode(doc(), id);
         if (cmd) run(cmd);
       }
@@ -202,7 +214,17 @@ export default function App() {
    * 切る線を作る。
    * できたものは普通のパスなので、そのまま点をドラッグして直せる。
    */
-  async function onMakeCutline() {
+  function onMakeCutline() {
+    // 手で直したあとなら、消えてよいか先に聞く（SPEC 7.4）
+    const cut = existingCutline();
+    if (cut?.origin?.type === 'cutline' && cut.origin.manuallyEdited) {
+      setConfirmRemake(true);
+      return;
+    }
+    void makeCutline();
+  }
+
+  async function makeCutline() {
     const node = targetImage();
     if (!node) return;
     // 背景を消してあればその結果から、まだなら元画像から作る
@@ -258,6 +280,46 @@ export default function App() {
   }
 
   /**
+   * 道具を持ち替える。
+   * 「点」に持ち替えたとき、何も選んでいなければ切る線を選んでおく。
+   * 点を直したい相手はまず切る線なので、押した瞬間に点が見えるほうがよい。
+   */
+  function changeTool(next: ToolId) {
+    setTool(next);
+    setSelectedAnchor(null);
+    if (next !== 'node') return;
+    const sel = selection()[0];
+    const found = sel ? findNode(doc(), sel) : null;
+    if (found?.node.type === 'path') return;
+    const cut = existingCutline();
+    if (cut) selectOnly(cut.id);
+  }
+
+  /** 選んでいる点を消す。3 点を下回るなら断って理由を出す */
+  function removeAnchor(a: NonNullable<ReturnType<typeof selectedAnchor>>) {
+    const found = findNode(doc(), a.nodeId);
+    if (!found || found.node.type !== 'path') return;
+    const n = found.node;
+    const next = deleteAnchor(n.subpaths, a);
+    if (!next) {
+      setError(t('node.tooFew'));
+      return;
+    }
+    run(
+      editSubpaths(
+        n.id,
+        {
+          subpaths: n.subpaths,
+          manuallyEdited: n.origin?.type === 'cutline' && n.origin.manuallyEdited,
+        },
+        next,
+        'cmd.deleteAnchor',
+      ),
+    );
+    setSelectedAnchor(null);
+  }
+
+  /**
    * キーホルダーの穴をあける。
    *
    * 置き場所は切る線の内側から自動で選ぶ。上から吊るすものなので、
@@ -276,9 +338,14 @@ export default function App() {
   }
 
   /** すでに切る線があれば、作り直しで置き換える */
-  function existingCutlineId(): string | null {
+  function existingCutline(): PathNode | null {
     const layer = doc().layers.find((l) => l.role === 'cutline');
-    return layer?.nodes[0]?.id ?? null;
+    const n = layer?.nodes[0];
+    return n?.type === 'path' ? n : null;
+  }
+
+  function existingCutlineId(): string | null {
+    return existingCutline()?.id ?? null;
   }
 
   /** 選んでいるものを優先し、無ければ絵が 1 枚だけならそれを使う */
@@ -298,14 +365,14 @@ export default function App() {
         onImport={() => void onImport()}
         onRemoveBackground={() => void onRemoveBackground()}
         onExport={() => void onExport()}
-        onMakeCutline={() => void onMakeCutline()}
+        onMakeCutline={onMakeCutline}
         onMakeHole={onMakeHole}
         busy={busy() || cutlineBusy()}
         hasArtwork={hasArtwork()}
         canRemoveBackground={targetImage() !== null}
         canMakeHole={hasCutline()}
       />
-      <ToolRail active={tool()} onChange={setTool} />
+      <ToolRail active={tool()} onChange={changeTool} />
       <Canvas onRequestImport={() => void onImport()} />
       <Inspector />
       <StatusBar />
@@ -327,6 +394,29 @@ export default function App() {
         {(r) => <ExportDone result={r()} onClose={() => setExported(null)} />}
       </Show>
 
+      <Show when={confirmRemake()}>
+        <div class="overlay" onClick={() => setConfirmRemake(false)}>
+          <div class="overlay-box" onClick={(e) => e.stopPropagation()}>
+            <p class="overlay-label">{t('cutline.overwrite')}</p>
+            <div style={{ display: 'flex', gap: '8px', 'justify-content': 'center', 'margin-top': '16px' }}>
+              <button class="tbtn" onClick={() => setConfirmRemake(false)}>
+                {t('cutline.overwriteNo')}
+              </button>
+              <button
+                class="tbtn primary"
+                onClick={() => {
+                  setConfirmRemake(false);
+                  setSelectedAnchor(null);
+                  void makeCutline();
+                }}
+              >
+                {t('cutline.overwriteYes')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Show>
+
       <Show when={error()}>
         {(msg) => (
           <div class="toast issue error" onClick={() => setError(null)}>
@@ -339,7 +429,9 @@ export default function App() {
       {/* つぎにやることを常に見せる（SPEC 9.2） */}
       <Show when={hasArtwork() && !mattingProgress()}>
         <div class="next-hint">
-          {!everythingCutOut()
+          {tool() === 'node'
+            ? t('node.hint')
+            : !everythingCutOut()
             ? t('next.removeBg')
             : !hasCutline()
               ? t('next.cutline')
