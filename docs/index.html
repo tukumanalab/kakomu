@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>kakomu — すきな絵をアクリルキーホルダーにする道具</title>
-<meta name="description" content="アクリルスタンド・アクリルキーホルダーをつくる道具。絵を入れて、うしろを消して、まわりを囲む線をつくる。かんじとひらがなを切りかえられます。">
+<title>kakomu — アクリルキーホルダーの加工データを作るアプリ</title>
+<meta name="description" content="絵を読み込み、背景を消し、切る線を作り、キーホルダーの穴をあけて、レーザー加工機用の SVG と UV プリンター用の PDF を書き出すデスクトップアプリ。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%E2%9C%82%EF%B8%8F</text></svg>">
 
-<meta property="og:title" content="kakomu — すきな絵をアクリルキーホルダーにする道具">
-<meta property="og:description" content="絵を入れて、うしろを消して、まわりを囲む線をつくる。切る線は SVG、絵は PDF で出せます。">
+<meta property="og:title" content="kakomu — アクリルキーホルダーの加工データを作るアプリ">
+<meta property="og:description" content="背景を消して、切る線を作り、穴をあけて、切るデータ（SVG）と印刷するデータ（PDF）を書き出します。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://tukumanalab.github.io/kakomu/">
 <meta property="og:image" content="https://tukumanalab.github.io/kakomu/images/overview.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 
 <style>
 :root{
@@ -28,9 +28,7 @@
   --warn:#8A5C10; --warn-tint:#F4EBD9;
 
   --f-gothic:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;
-  --f-round:"Zen Maru Gothic","UD デジタル教科書体 NK-R","Hiragino Maru Gothic ProN","Zen Kaku Gothic New",system-ui,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  --f-body:var(--f-gothic);
   --fs:16px; --lh:1.85;
 }
 @media (prefers-color-scheme:dark){
@@ -53,30 +51,21 @@
   --print:#4EBAC6; --print-tint:#12292D;
   --warn:#D6A44A; --warn-tint:#2B2416;
 }
-/* ひらがなモード：文言・書体・文字サイズ・行間が変わる。構造は変わらない */
-html[data-read="hira"]{ --f-body:var(--f-round); --fs:18px; --lh:2.1; }
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--f-body); font-size:var(--fs); line-height:var(--lh); -webkit-font-smoothing:antialiased}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--f-gothic); font-size:var(--fs); line-height:var(--lh); -webkit-font-smoothing:antialiased}
 a{color:inherit}
+code{font-family:var(--f-mono); font-size:.86em}
 :focus-visible{outline:2px solid var(--cut); outline-offset:3px}
 .wrap{max-width:1120px; margin:0 auto; padding:0 28px}
 
 /* top bar */
 .topbar{border-bottom:1px solid var(--line); position:sticky; top:0; z-index:10; background:color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter:blur(10px)}
 .topbar .wrap{display:flex; align-items:center; justify-content:space-between; min-height:58px; gap:16px; flex-wrap:wrap; padding-top:6px; padding-bottom:6px}
-.brand{font-weight:900; font-size:19px; letter-spacing:-.02em; text-decoration:none; font-family:var(--f-gothic)}
+.brand{font-weight:900; font-size:19px; letter-spacing:-.02em; text-decoration:none}
 .brand i{font-style:normal; color:var(--cut)}
-.barright{display:flex; align-items:center; gap:18px; flex-wrap:wrap}
-.reader{display:flex; align-items:center; gap:8px}
-.reader .rl{font-family:var(--f-mono); font-size:10px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase}
-.seg{display:flex; border:1px solid var(--line); background:var(--surface); border-radius:3px; overflow:hidden}
-.seg button{font-family:inherit; font-size:13px; line-height:1; padding:9px 15px; min-height:36px; border:0; background:transparent; color:var(--ink-soft); cursor:pointer; border-right:1px solid var(--line)}
-.seg button:last-child{border-right:0}
-.seg button:hover{background:var(--surface-2)}
-.seg button[aria-pressed="true"]{background:var(--cut); color:#fff; font-weight:700}
-.topnav{display:flex; gap:18px; font-family:var(--f-mono); font-size:12px}
+.topnav{display:flex; gap:18px; flex-wrap:wrap; font-family:var(--f-mono); font-size:12px}
 .topnav a{color:var(--ink-soft); text-decoration:none}
 .topnav a:hover{color:var(--cut)}
 @media (max-width:860px){ .topnav a.hide-sm{display:none} }
@@ -88,13 +77,11 @@ a{color:inherit}
 .badges{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px}
 .badge{display:inline-flex; align-items:center; gap:8px; padding:4px 12px; border-radius:2px; font-size:12.5px; line-height:1.7; border:1px solid transparent}
 .badge.lab{background:var(--print-tint); color:var(--print); border-color:color-mix(in srgb,var(--print) 28%,transparent); text-decoration:none}
-.badge.wip{background:var(--warn-tint); color:var(--warn); border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+.badge.wip{background:var(--warn-tint); color:var(--warn); border-color:color-mix(in srgb,var(--warn) 30%,transparent); text-decoration:none}
 .badge .dot{width:6px; height:6px; border-radius:50%; background:currentColor; flex:none}
-h1{font-family:var(--f-gothic); font-size:clamp(56px,10vw,112px); font-weight:900; line-height:.9; letter-spacing:-.04em; margin:0 0 10px}
-.kanji-note{font-family:var(--f-mono); font-size:12px; color:var(--muted); letter-spacing:.05em; margin:0 0 24px}
-.kanji-note b{color:var(--cut); font-weight:500}
-.tagline{font-size:clamp(20px,2.5vw,27px); line-height:1.55; font-weight:700; letter-spacing:-.01em; margin:0 0 16px; max-width:22ch; text-wrap:balance}
-.sub{font-size:calc(var(--fs) - .5px); color:var(--ink-soft); margin:0 0 28px; max-width:46ch}
+h1{font-size:clamp(56px,10vw,112px); font-weight:900; line-height:.9; letter-spacing:-.04em; margin:0 0 24px}
+.tagline{font-size:clamp(20px,2.5vw,27px); line-height:1.55; font-weight:700; letter-spacing:-.01em; margin:0 0 16px; max-width:24ch; text-wrap:balance}
+.sub{font-size:calc(var(--fs) - .5px); color:var(--ink-soft); margin:0 0 28px; max-width:48ch}
 .ctas{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
 .btn{display:inline-flex; align-items:center; gap:9px; min-height:44px; font-family:var(--f-mono); font-size:13px; font-weight:500; padding:11px 20px; text-decoration:none; border:1px solid var(--ink); background:var(--ink); color:var(--paper); transition:opacity .15s}
 .btn:hover{opacity:.82}
@@ -102,7 +89,7 @@ h1{font-family:var(--f-gothic); font-size:clamp(56px,10vw,112px); font-weight:90
 .btn.ghost:hover{border-color:var(--cut); color:var(--cut); opacity:1}
 
 /* drawing */
-.plate{background:var(--surface); border:1px solid var(--line); padding:16px 16px 11px}
+.plate{background:var(--surface); border:1px solid var(--line); padding:16px 16px 11px; margin:0}
 .plate svg{display:block; width:100%; height:auto}
 .plate figcaption{display:flex; flex-wrap:wrap; gap:5px 16px; margin-top:11px; padding-top:10px; border-top:1px solid var(--line-soft); font-family:var(--f-mono); font-size:10px; color:var(--muted)}
 .plate figcaption span{display:flex; align-items:center; gap:6px}
@@ -119,69 +106,56 @@ section > .wrap{padding-top:62px; padding-bottom:62px}
 .eyebrow::after{content:""; flex:1; height:1px; background:var(--line)}
 h2{font-size:clamp(24px,3.3vw,33px); font-weight:900; letter-spacing:-.025em; line-height:1.4; margin:0 0 14px; text-wrap:balance}
 h3{font-size:calc(var(--fs) + 1px); font-weight:700; margin:36px 0 12px}
-.lede{font-size:calc(var(--fs) + .5px); color:var(--ink-soft); max-width:58ch; margin:0 0 30px}
+.lede{font-size:calc(var(--fs) + .5px); color:var(--ink-soft); max-width:62ch; margin:0 0 30px}
 .lede b{color:var(--ink)}
-.body{max-width:58ch; color:var(--ink-soft); margin:0 0 18px}
+.body{max-width:66ch; color:var(--ink-soft); margin:0 0 18px}
 .body b{color:var(--ink)}
+ul.list{max-width:70ch; margin:0 0 22px; padding-left:22px; color:var(--ink-soft); font-size:calc(var(--fs) - 1px)}
+ul.list li{margin-bottom:6px}
+ul.list b{color:var(--ink)}
 
 /* steps */
 .figrow{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:32px}
-.fig{border:1px solid var(--line); background:var(--surface); padding:14px 14px 12px}
+.fig{border:1px solid var(--line); background:var(--surface); padding:14px 14px 12px; margin:0}
 .fig svg{display:block; width:100%; height:auto}
 .fig .cap{margin-top:10px; padding-top:9px; border-top:1px solid var(--line-soft); font-family:var(--f-mono); font-size:10.5px; color:var(--muted)}
-.fig .cap b{display:block; font-family:var(--f-body); font-size:14px; color:var(--ink); font-weight:700; margin-top:3px}
-ol.steps{list-style:none; margin:0; padding:0; counter-reset:s; max-width:64ch}
+.fig .cap b{display:block; font-family:var(--f-gothic); font-size:14px; color:var(--ink); font-weight:700; margin-top:3px}
+ol.steps{list-style:none; margin:0; padding:0; counter-reset:s; max-width:72ch}
 ol.steps li{counter-increment:s; display:grid; grid-template-columns:38px 1fr; gap:14px; padding:12px 0; border-bottom:1px solid var(--line-soft); align-items:baseline}
 ol.steps li:last-child{border-bottom:0}
 ol.steps li::before{content:counter(s,decimal-leading-zero); font-family:var(--f-mono); font-size:11px; font-weight:600; color:var(--cut)}
 ol.steps b{font-weight:700}
 ol.steps span{color:var(--ink-soft); font-size:calc(var(--fs) - 1px)}
 
-/* compare */
-.compare{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:22px}
-.cmp{border:1px solid var(--line); background:var(--surface); padding:20px 22px 22px}
-.cmp.now{opacity:.82}
-.cmp h3{font-family:var(--f-mono); font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; margin:0 0 14px; color:var(--muted)}
-.cmp.next h3{color:var(--cut)}
-.chain{display:flex; flex-direction:column; font-size:calc(var(--fs) - 2px)}
-.chain div{padding:8px 0; border-bottom:1px dashed var(--line); display:flex; align-items:baseline; gap:10px}
-.chain div:last-child{border-bottom:0}
-.chain .n{font-family:var(--f-mono); font-size:10.5px; color:var(--muted); min-width:20px; flex:none}
-.cmp.next .chain .n{color:var(--cut)}
-.cmp .foot{margin:16px 0 0; font-size:12.5px; color:var(--muted); line-height:1.9}
-.respect{border-left:2px solid var(--print); background:var(--print-tint); padding:14px 18px; max-width:66ch}
-.respect p{margin:0; font-size:calc(var(--fs) - 1.5px); color:var(--ink)}
+/* feature grid */
+.feats{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+.feat{border:1px solid var(--line); background:var(--surface); padding:20px 22px 20px}
+.feat h3{margin:0 0 10px; font-size:calc(var(--fs) + 1px)}
+.feat ul{margin:0; padding-left:20px; font-size:calc(var(--fs) - 2px); color:var(--ink-soft)}
+.feat li{margin-bottom:6px}
+.feat li:last-child{margin-bottom:0}
+.feat .tw{margin:14px 0 0}
+.feat .tw table{min-width:0}
 
 /* tables */
 .tw{border:1px solid var(--line); background:var(--surface); overflow-x:auto; margin:0 0 22px}
 .tw table{border-collapse:collapse; width:100%; min-width:480px}
-.tw th,.tw td{text-align:left; padding:12px 18px; border-bottom:1px solid var(--line-soft); vertical-align:top}
+.tw th,.tw td{text-align:left; padding:10px 16px; border-bottom:1px solid var(--line-soft); vertical-align:top; font-size:calc(var(--fs) - 2px)}
 .tw thead th{font-family:var(--f-mono); font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); background:var(--surface-2); border-bottom:1px solid var(--line); white-space:nowrap}
 .tw tbody tr:last-child td{border-bottom:0}
-.tw .lvl{font-family:var(--f-mono); font-size:11px; color:var(--muted); white-space:nowrap}
-.tw .kj{font-family:var(--f-gothic)}
-.tw .hg{font-family:var(--f-round)}
-.tw .note{font-size:calc(var(--fs) - 3px); color:var(--muted)}
-
-/* two-panel: 変わる / 変わらない */
-.twopane{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:22px}
-.pane{border:1px solid var(--line); background:var(--surface); padding:20px 22px 22px}
-.pane h4{margin:0 0 14px; font-size:calc(var(--fs) - 1px); font-weight:700; display:flex; align-items:center; gap:9px}
-.pane h4 .mk{font-family:var(--f-mono); font-size:15px; line-height:1}
-.pane.change h4 .mk{color:var(--cut)}
-.pane.same h4 .mk{color:var(--print)}
-.pane ul{margin:0; padding-left:20px; font-size:calc(var(--fs) - 2px); color:var(--ink-soft)}
-.pane li{margin-bottom:7px}
-.pane li:last-child{margin-bottom:0}
+.tw .lvl{font-family:var(--f-mono); font-size:12px; color:var(--ink-soft); white-space:nowrap}
+.tw .err{color:var(--cut); font-weight:700; white-space:nowrap}
+.tw .wrn{color:var(--warn); font-weight:700; white-space:nowrap}
 
 /* outputs */
-.exports{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+.exports{display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:22px}
 .ex{border:1px solid var(--line); background:var(--surface)}
 .ex-top{padding:18px 20px 14px; border-bottom:1px solid var(--line-soft)}
 .ex-top .fmt{font-family:var(--f-mono); font-size:27px; font-weight:600; letter-spacing:-.02em; line-height:1.1}
 .ex-cut .fmt{color:var(--cut)} .ex-print .fmt{color:var(--print)}
 .ex-top .what{font-size:calc(var(--fs) - 1px); font-weight:700; margin-top:6px}
 .ex-top .to{font-size:12.5px; color:var(--muted); margin-top:2px}
+.ex-top .to code{font-size:12px}
 .ex ul{margin:0; padding:14px 20px 18px 34px; font-size:calc(var(--fs) - 2.5px); color:var(--ink-soft)}
 .ex li{margin-bottom:5px}
 
@@ -194,31 +168,29 @@ figure.shot.narrow img{border-radius:4px}
 .shotrow{display:grid; grid-template-columns:minmax(0,1fr) 440px; gap:28px; align-items:start; margin-bottom:22px}
 @media (max-width:900px){ .shotrow{grid-template-columns:minmax(0,1fr)} .shotrow figure.shot.narrow{max-width:100%} }
 
+/* status */
+.twopane{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+.pane{border:1px solid var(--line); background:var(--surface); padding:20px 22px 22px}
+.pane h3{margin:0 0 14px; font-size:calc(var(--fs) - 1px); display:flex; align-items:center; gap:9px}
+.pane h3 .mk{font-family:var(--f-mono); font-size:15px; line-height:1}
+.pane.yes h3 .mk{color:var(--print)}
+.pane.no h3 .mk{color:var(--cut)}
+.pane ul{margin:0; padding-left:20px; font-size:calc(var(--fs) - 2px); color:var(--ink-soft)}
+.pane li{margin-bottom:7px}
+.pane li:last-child{margin-bottom:0}
+
 /* install */
 .plats{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-bottom:24px}
 .plat{border:1px solid var(--line); background:var(--surface); padding:18px 20px 20px}
-.plat.main{border-color:var(--cut)}
 .plat h3{margin:0 0 6px; font-size:calc(var(--fs) + 1px); font-weight:700}
-.plat.main h3{color:var(--cut)}
 .plat p{margin:0; font-size:calc(var(--fs) - 2px); color:var(--ink-soft); line-height:1.8}
+.plat .file{font-family:var(--f-mono); font-size:11.5px; color:var(--muted); margin-bottom:8px}
 .code{display:block; margin:12px 0 0; padding:12px 14px; overflow-x:auto;
   background:var(--surface-2); border:1px solid var(--line); border-radius:3px;
   font-family:var(--f-mono); font-size:11.5px; line-height:1.75; color:var(--ink-soft); white-space:pre}
-.warnbox{border-left:2px solid var(--warn); background:var(--warn-tint); padding:14px 18px; max-width:66ch}
+.warnbox{border-left:2px solid var(--warn); background:var(--warn-tint); padding:14px 18px; max-width:72ch}
 .warnbox p{margin:0; font-size:calc(var(--fs) - 1.5px); color:var(--ink)}
-.warnbox code{font-family:var(--f-mono); font-size:11.5px}
-
-/* roadmap */
-.gantt{border:1px solid var(--line); background:var(--surface); padding:20px 22px 16px; overflow-x:auto}
-.gantt-inner{min-width:560px}
-.gscale{display:grid; grid-template-columns:150px repeat(17,1fr); font-family:var(--f-mono); font-size:10px; color:var(--muted); border-bottom:1px solid var(--line); padding-bottom:6px; margin-bottom:10px}
-.gscale i{font-style:normal; font-variant-numeric:tabular-nums}
-.grow{display:grid; grid-template-columns:150px repeat(17,1fr); align-items:center; margin-bottom:6px}
-.glab{font-size:12.5px; padding-right:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.glab b{font-family:var(--f-mono); color:var(--cut); font-weight:600; font-size:11px; margin-right:6px}
-.gbar{height:22px; background:var(--surface-2); border:1px solid var(--line); display:flex; align-items:center; padding:0 8px; font-family:var(--f-mono); font-size:10px; color:var(--ink-soft); white-space:nowrap; overflow:hidden}
-.gbar.acc{background:var(--cut-tint); border-color:var(--cut); color:var(--cut); font-weight:600}
-.gnote{font-size:12.5px; color:var(--muted); margin-top:14px; max-width:60ch}
+.warnbox code{font-size:11.5px}
 
 footer{padding:40px 0 56px}
 footer .wrap{display:flex; flex-wrap:wrap; gap:18px 32px; align-items:baseline; justify-content:space-between}
@@ -229,7 +201,7 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
 @media (max-width:900px){
   .hero .wrap{grid-template-columns:minmax(0,1fr); gap:38px; padding-top:44px; padding-bottom:44px}
   .plate{max-width:380px}
-  .compare,.exports,.twopane{grid-template-columns:1fr}
+  .exports,.twopane,.feats{grid-template-columns:1fr}
   .figrow{grid-template-columns:1fr; max-width:330px}
 }
 @media (max-width:620px){ .wrap{padding:0 18px} }
@@ -240,22 +212,15 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
 <div class="topbar">
   <div class="wrap">
     <a class="brand" href="#top">kakomu<i>.</i></a>
-    <div class="barright">
-      <div class="reader">
-        <span class="rl">よみかた</span>
-        <div class="seg" role="group" aria-label="文字の読みやすさを変える">
-          <button type="button" data-read-btn="kanji" aria-pressed="true">かんじ</button>
-          <button type="button" data-read-btn="hira"  aria-pressed="false">ひらがな</button>
-        </div>
-      </div>
-      <nav class="topnav">
-        <a href="#screen">がめん</a>
-        <a href="#how" class="hide-sm">つくりかた</a>
-        <a href="#read">よみやすさ</a>
-        <a href="#output" class="hide-sm">できるデータ</a>
-        <a href="https://github.com/tukumanalab/kakomu">GitHub</a>
-      </nav>
-    </div>
+    <nav class="topnav">
+      <a href="#screen">画面</a>
+      <a href="#how">使いかた</a>
+      <a href="#features" class="hide-sm">機能</a>
+      <a href="#output" class="hide-sm">書き出し</a>
+      <a href="#status" class="hide-sm">現状</a>
+      <a href="#install">入れかた</a>
+      <a href="https://github.com/tukumanalab/kakomu">GitHub</a>
+    </nav>
   </div>
 </div>
 
@@ -265,20 +230,19 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
     <div>
       <div class="badges">
         <a class="badge lab" href="https://sites.google.com/view/tukumanalab/">青学つくまなラボ ↗</a>
-        <span class="badge wip"><span class="dot"></span><span data-t="badge.wip">まだ作っている途中です</span></span>
+        <a class="badge wip" href="https://github.com/tukumanalab/kakomu/releases"><span class="dot"></span>v0.2.1 プレリリース</a>
       </div>
       <h1>kakomu</h1>
-      <p class="kanji-note">/kakomɯ/ — <b data-t="hero.kanji">囲む</b>。<span data-t="hero.kanji2">絵を囲む線をつくる。</span></p>
-      <p class="tagline" data-t="hero.tagline">すきな絵を、アクリルのキーホルダーにする。</p>
-      <p class="sub" data-t="hero.sub">絵を入れて、うしろを消して、まわりを囲む線をつくります。あとはレーザー加工機と UV プリンターに渡すだけ。</p>
+      <p class="tagline">アクリルキーホルダーの加工データを作るデスクトップアプリ。</p>
+      <p class="sub">絵を読み込み、背景を消し、その外側に切る線を作り、キーホルダーの穴をあけて、レーザー加工機用の SVG と UV プリンター用の PDF を書き出します。Windows / macOS / Linux で動きます。</p>
       <div class="ctas">
-        <a class="btn" href="https://github.com/tukumanalab/kakomu">GitHub</a>
-        <a class="btn ghost" href="https://github.com/tukumanalab/kakomu/blob/main/SPEC.md">せつめい SPEC.md</a>
+        <a class="btn" href="https://github.com/tukumanalab/kakomu/releases">ダウンロード</a>
+        <a class="btn ghost" href="https://github.com/tukumanalab/kakomu">GitHub</a>
       </div>
     </div>
 
     <figure class="plate">
-      <svg viewBox="0 0 250 208" role="img" aria-label="絵のかたちと、その外がわ 3ミリにできた切る線、直径 4ミリのあなを示した図">
+      <svg viewBox="0 0 250 208" role="img" aria-label="絵の形と、その外側 3mm にできた切る線、直径 4mm の穴を示した図">
         <defs>
           <path id="fig-cut" d="M118,30 A12,12 0 0 1 142,30 L142,48 C160,54 172,64 172,82 C172,91 169,98 165,104
             C186,117 197,139 198,160 L198,174 Q198,184 188,184 L72,184 Q62,184 62,174 L62,160
@@ -298,7 +262,7 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
         <circle cx="130" cy="30" r="6" fill="none" stroke="var(--cut)" stroke-width="1.4"/>
         <line x1="130" y1="22" x2="130" y2="38" stroke="var(--cut)" stroke-width=".5" stroke-dasharray="2 2"/>
         <line x1="122" y1="30" x2="138" y2="30" stroke="var(--cut)" stroke-width=".5" stroke-dasharray="2 2"/>
-        <text x="144" y="27" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--cut)">4ミリ</text>
+        <text x="144" y="27" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--cut)">φ4mm</text>
         <g fill="var(--surface)" stroke="var(--cut)" stroke-width="1.2">
           <rect x="115" y="45.5" width="5" height="5"/><rect x="139.5" y="45.5" width="5" height="5"/>
           <rect x="169.5" y="79.5" width="5" height="5"/><rect x="195.5" y="157.5" width="5" height="5"/>
@@ -308,13 +272,13 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
         <line x1="184" y1="163" x2="198" y2="163" stroke="var(--ink-soft)" stroke-width=".7"/>
         <line x1="184" y1="159" x2="184" y2="167" stroke="var(--ink-soft)" stroke-width=".7"/>
         <line x1="198" y1="159" x2="198" y2="167" stroke="var(--ink-soft)" stroke-width=".7"/>
-        <text x="204" y="166" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--ink-soft)">3ミリ</text>
-        <text x="8" y="201" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--muted)">じっさいの おおきさ — たんいは ぜんぶ ミリ</text>
+        <text x="204" y="166" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--ink-soft)">3mm</text>
+        <text x="8" y="201" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="var(--muted)">既定値: ふちの太さ 3mm ／ 穴 φ4mm</text>
       </svg>
       <figcaption>
-        <span><i class="sw" style="background:var(--cut)"></i>きる せん / SVG</span>
-        <span><i class="sw" style="background:var(--surface-2); height:8px; border:1px solid var(--line)"></i>え / PDF</span>
-        <span><i class="sw box"></i>てん</span>
+        <span><i class="sw" style="background:var(--cut)"></i>切る線・穴 / SVG</span>
+        <span><i class="sw" style="background:var(--surface-2); height:8px; border:1px solid var(--line)"></i>絵 / PDF</span>
+        <span><i class="sw box"></i>点</span>
       </figcaption>
     </figure>
   </div>
@@ -323,12 +287,12 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
 <!-- ================= SCREEN ================= -->
 <section id="screen">
   <div class="wrap">
-    <p class="eyebrow">がめん</p>
-    <h2 data-t="screen.h">これが、うごいているところです。</h2>
-    <p class="lede" data-t="screen.lede">絵を入れて、背景を消して、そのまわりを囲んだところ。<b>長さの表示はぜんぶミリ</b>で、ピクセルはどこにも出てきません。</p>
+    <p class="eyebrow">画面</p>
+    <h2>絵の背景を消して、切る線と穴を作ったところ。</h2>
+    <p class="lede">左に道具、中央に板、右に設定・レイヤー・チェック、下に板の大きさ・倍率・絵の解像度が並びます。長さと位置は mm、角度は度で表示します。</p>
     <figure class="shot">
-      <img src="images/overview.png" alt="kakomu の画面。絵を置き、背景を消し、その 3ミリ外側に切る線ができている" loading="lazy" width="1600" height="1038">
-      <figcaption data-t="screen.cap">左が道具、まん中が板、右が設定とレイヤーとチェック。下に「板の大きさ 80 × 120 ミリ」「倍率」「絵の細かさ」が出ています。</figcaption>
+      <img src="images/overview.png" alt="kakomu の画面。背景を消した絵の 3mm 外側に切る線があり、その内側に穴が 1 つある" loading="lazy" width="2640" height="1720">
+      <figcaption>v0.2.1 の画面。上のバーの左から「絵を入れる」「背景を消す」「囲む」「穴をあける」と並び、右端に「書き出す」があります。</figcaption>
     </figure>
   </div>
 </section>
@@ -336,157 +300,198 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
 <!-- ================= HOW ================= -->
 <section id="how">
   <div class="wrap">
-    <p class="eyebrow">つくりかた</p>
-    <h2 data-t="how.h">はじめてでも、その日のうちに 1 こできる。</h2>
-    <p class="lede" data-t="how.lede"><b>1 回で 1 こ作りおわること</b>を目指して設計しています。とちゅうで別のソフトに移りません。</p>
+    <p class="eyebrow">使いかた</p>
+    <h2>上のバーのボタンを、左から順に押します。</h2>
+    <p class="lede">画面の下に、次にやることが表示されます。</p>
 
     <div class="figrow">
       <figure class="fig">
-        <svg viewBox="52 8 156 186" role="img" aria-label="うしろに背景がある写真">
+        <svg viewBox="52 8 156 186" role="img" aria-label="背景がある画像">
           <rect x="56" y="12" width="148" height="178" fill="var(--surface-2)"/>
           <use href="#fig-art" fill="var(--muted)" opacity=".55"/>
         </svg>
-        <figcaption class="cap">STEP 01<b data-t="fig.1">えを いれる</b></figcaption>
+        <figcaption class="cap">STEP 01<b>絵を入れる</b></figcaption>
       </figure>
       <figure class="fig">
-        <svg viewBox="52 8 156 186" role="img" aria-label="うしろが消えた画像">
+        <svg viewBox="52 8 156 186" role="img" aria-label="背景が透明になった画像">
           <rect x="56" y="12" width="148" height="178" fill="url(#checker)"/>
           <use href="#fig-art" fill="var(--muted)" opacity=".55"/>
         </svg>
-        <figcaption class="cap">STEP 02<b data-t="fig.2">うしろを けす</b></figcaption>
+        <figcaption class="cap">STEP 02<b>背景を消す</b></figcaption>
       </figure>
       <figure class="fig">
-        <svg viewBox="52 8 156 186" role="img" aria-label="えの外がわにできた切る線">
+        <svg viewBox="52 8 156 186" role="img" aria-label="絵の外側にできた切る線と穴">
           <rect x="56" y="12" width="148" height="178" fill="url(#checker)"/>
           <use href="#fig-art" fill="var(--muted)" opacity=".55"/>
           <use href="#fig-cut" fill="none" stroke="var(--cut)" stroke-width="2"/>
           <circle cx="130" cy="30" r="6" fill="none" stroke="var(--cut)" stroke-width="2"/>
         </svg>
-        <figcaption class="cap">STEP 03<b data-t="fig.3">かこむ</b></figcaption>
-      </figure>
-    </div>
-
-    <div class="shotrow">
-      <figure class="shot">
-        <img src="images/matting.png" alt="背景を消しているところ。進捗と「画像を作っています」の表示" loading="lazy" width="1400" height="908">
-        <figcaption data-t="shot.matting">背景を消しているところ。いま何をしているかを必ず出します。だまって固まっていると「こわれた」と思ってしまうからです。</figcaption>
-      </figure>
-      <figure class="shot narrow">
-        <img src="images/cutline-closeup.png" alt="背景が消えた絵と、その 3ミリ外側を回るマゼンタの切る線" loading="lazy" width="560" height="560">
-        <figcaption data-t="shot.cutline">できた切る線。絵の輪郭から 3ミリ外側を回っています。角が丸いのは、距離で外側を測っているからです。</figcaption>
+        <figcaption class="cap">STEP 03–05<b>囲む・点を直す・穴をあける</b></figcaption>
       </figure>
     </div>
 
     <ol class="steps">
-      <li><span><b data-t="st.1b">絵を入れる。</b><span data-t="st.1">写真でもイラストでも、画面にドラッグするだけ。</span></span></li>
-      <li><span><b data-t="st.2b">うしろを消す。</b><span data-t="st.2">ボタンを 1 回おすと、背景が自動で消えます。インターネットに送りません。</span></span></li>
-      <li><span><b data-t="st.3b">囲む。</b><span data-t="st.3">絵の 3 ミリ外がわに、切るための線ができます。</span></span></li>
-      <li><span><b data-t="st.4b">かたちを整える。</b><span data-t="st.4">線の上の点をドラッグして、細すぎるところを太くします。</span></span></li>
-      <li><span><b data-t="st.5b">部品をつける。</b><span data-t="st.5">キーホルダーなら穴、立てるなら台座。大きさは決めてあります。</span></span></li>
-      <li><span><b data-t="st.6b">かきだす。</b><span data-t="st.6">切るデータと印刷するデータが、いっしょに出てきます。</span></span></li>
+      <li><span><b>絵を入れる。</b><span>画像を選ぶか、窓にドラッグします。PNG / JPEG / WebP / TIFF。板の中央に実寸で置かれます。</span></span></li>
+      <li><span><b>背景を消す。</b><span>手元の AI モデルで背景を透明にします。画像は外部に送信しません。</span></span></li>
+      <li><span><b>囲む。</b><span>絵の外側（既定 3mm）に切る線ができ、道具が「点」に切り替わります。</span></span></li>
+      <li><span><b>点を直す。</b><span>切る線の点やハンドルをドラッグして形を直します。</span></span></li>
+      <li><span><b>穴をあける。</b><span>切る線の内側のいちばん上に φ4mm の穴が置かれます。「穴」の道具で好きな場所にも置けます。</span></span></li>
+      <li><span><b>書き出す。</b><span>フォルダを選ぶと、切るデータ（SVG）と印刷するデータ（PDF）が同時に出ます。</span></span></li>
     </ol>
+
+    <div class="shotrow" style="margin-top:36px">
+      <figure class="shot">
+        <img src="images/matting.png" alt="背景を消している途中。進み具合と「画像を作っています」の表示" loading="lazy" width="2640" height="1720">
+        <figcaption>背景を消している途中。ダウンロード・準備・背景を消す・画像を作る、の段階を表示します。</figcaption>
+      </figure>
+      <figure class="shot narrow">
+        <img src="images/cutline-closeup.png" alt="背景が消えた絵と、その 3mm 外側を回るマゼンタの切る線、内側の穴" loading="lazy" width="840" height="840">
+        <figcaption>できた切る線。絵の輪郭から 3mm 外側を回り、角は丸くなります。穴は「穴をあける」で、切る線の内側のいちばん上に置かれたものです。</figcaption>
+      </figure>
+    </div>
   </div>
 </section>
 
-<!-- ================= READING ================= -->
-<section id="read">
+<!-- ================= FEATURES ================= -->
+<section id="features">
   <div class="wrap">
-    <p class="eyebrow">よみやすさ</p>
-    <h2 data-t="read.h">同じ画面のまま、文字だけ変わる。</h2>
-    <p class="lede" data-t="read.lede">使う人は小学校 1 年生から先生までいます。だから<b>子ども用の画面を別に作りません</b>。画面の作りはそのままで、<b>かんじ</b>と<b>ひらがな</b>を切りかえます。このページの右上でもためせます。</p>
+    <p class="eyebrow">機能</p>
+    <h2>それぞれの機能と設定。</h2>
+    <p class="lede">数値はすべて v0.2.1 の範囲と既定値です。</p>
 
-    <h3 data-t="read.h1">切りかえると、こう変わります</h3>
+    <div class="feats">
+      <div class="feat">
+        <h3>絵を入れる・配置する</h3>
+        <ul>
+          <li>実寸は画像の解像度情報（PNG の pHYs、JPEG の JFIF）から決め、読めなければ 350dpi とみなします</li>
+          <li>板（80 × 120mm、変更不可）の中央に置き、はみ出すときは収まるまで縮めます</li>
+          <li>一辺 16,000px を超える画像は読み込めません</li>
+          <li>ドラッグで移動、四隅で拡縮、上の丸で回転。Shift で軸固定・縦横比維持・15° 刻み</li>
+          <li>X・Y・幅・高さ（mm）と角度（度）を数値で入力できます</li>
+        </ul>
+      </div>
+
+      <div class="feat">
+        <h3>背景を消す</h3>
+        <ul>
+          <li>ONNX モデルを手元で実行します。画像は外部に送信しません</li>
+          <li>各モデルは初回に 1 回だけダウンロードします（それぞれ約 170MB）</li>
+          <li>毎回元画像から処理するので、設定を変えてやり直せます。「元に戻す」で消す前に戻り、「消す前と見比べる」で切り替えて表示できます</li>
+        </ul>
+        <div class="tw">
+          <table>
+            <thead><tr><th>設定</th><th>値</th></tr></thead>
+            <tbody>
+              <tr><td>絵の種類</td><td>写真 <code>isnet-general-use</code>（既定）／ イラスト <code>isnet-anime</code></td></tr>
+              <tr><td>ふちを締める</td><td class="lvl">0–100%（35%）</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="feat">
+        <h3>切る線（囲む）</h3>
+        <ul>
+          <li>選んでいる絵の透明度から作ります。背景を消していなければ元画像の透明度を使います</li>
+          <li>設定を変えたら、もう一度「囲む」を押して作り直します</li>
+          <li>幅 1.5mm 未満のところは自動で太らせ、直せなければエラーを出します</li>
+          <li>切る線は 1 本だけで、作り直すと置き換わります。手で直したあとは確認が出ます</li>
+        </ul>
+        <div class="tw">
+          <table>
+            <thead><tr><th>設定</th><th>範囲（既定）</th></tr></thead>
+            <tbody>
+              <tr><td>ふちの太さ</td><td class="lvl">0–20mm（3.0mm）</td></tr>
+              <tr><td>なめらかさ</td><td class="lvl">0–100%（50%）</td></tr>
+              <tr><td>細すぎるところを直す ※</td><td class="lvl">オン／オフ（オン）</td></tr>
+              <tr><td>内側の穴を残す ※</td><td class="lvl">オン／オフ（オフ）</td></tr>
+              <tr><td>半透明をどこから残すか ※</td><td class="lvl">1–254（128）</td></tr>
+              <tr><td>小さな点を無視する ※</td><td class="lvl">0–50mm²（4.0mm²）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="body" style="font-size:12.5px; margin:8px 0 0">※ は「くわしい設定」の中にあります。</p>
+      </div>
+
+      <div class="feat">
+        <h3>点を直す</h3>
+        <ul>
+          <li>「点」の道具で、切る線の点を表示します</li>
+          <li>点をドラッグして形を変えます</li>
+          <li>点を選ぶとハンドルが出ます。なめらかな点は反対側のハンドルが向きを揃えて動き、角の点は片側だけ動きます</li>
+          <li>選んだ点は Delete / Backspace で消せます（3 点より少なくはできません）</li>
+          <li>点の追加と、線を新しく描く機能はまだありません</li>
+        </ul>
+      </div>
+
+      <div class="feat">
+        <h3>キーホルダーの穴</h3>
+        <ul>
+          <li>「穴をあける」: 切る線の内側で、条件を満たすいちばん上に置きます。押すたびに、ほかの穴を避けて増えます</li>
+          <li>「穴」の道具: 押した場所にそのまま置きます。置いた穴はドラッグで動かせます</li>
+          <li>選んだ穴は四隅のハンドルで大きさを変えられます</li>
+          <li>穴は切る線と同じ色・線幅で SVG に入ります</li>
+        </ul>
+        <div class="tw">
+          <table>
+            <thead><tr><th>設定</th><th>範囲（既定）</th></tr></thead>
+            <tbody>
+              <tr><td>穴の大きさ</td><td class="lvl">φ2–10mm（φ4.0mm）</td></tr>
+              <tr><td>ふちからの距離</td><td class="lvl">1–10mm（3.0mm）</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="feat">
+        <h3>レイヤー・よみかた</h3>
+        <ul>
+          <li>レイヤーは「部品」「切る線」「絵」の 3 つで固定です。非表示にしたレイヤーは書き出しません</li>
+          <li>鍵のボタンは表示が切り替わるだけで、いまは編集を止めません</li>
+          <li>上のバーの「かんじ／ひらがな」で文言を切り替えます。書体・大きさ・配置は変わらず、選択は次回起動時も残ります</li>
+        </ul>
+        <div class="tw">
+          <table>
+            <thead><tr><th>かんじ</th><th>ひらがな</th></tr></thead>
+            <tbody>
+              <tr><td>背景を消す</td><td>うしろを けす</td></tr>
+              <tr><td>穴をあける</td><td>あなを あける</td></tr>
+              <tr><td>書き出す</td><td>ほぞん する</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <h3 id="check">チェック</h3>
+    <p class="body">右下の「チェック」と下のバーに出ます。エラーがあっても書き出しは止めません。切る線を作ったときの検査は「切る線」パネルに出ます。</p>
     <div class="tw">
       <table>
-        <thead><tr><th data-t="read.th0">ボタンや メッセージ</th><th data-t="read.th1">かんじ</th><th data-t="read.th2">ひらがな</th></tr></thead>
+        <thead><tr><th>内容</th><th>基準</th><th>種類</th></tr></thead>
         <tbody>
-          <tr><td class="note" data-t="read.i1">画像を読みこむ</td><td class="kj">絵を入れる</td><td class="hg">えを いれる</td></tr>
-          <tr><td class="note" data-t="read.i2">背景を透過する</td><td class="kj">背景を消す</td><td class="hg">うしろを けす</td></tr>
-          <tr><td class="note" data-t="read.i3">カットラインを生成する</td><td class="kj">切る線をつくる</td><td class="hg">きる せんを つくる</td></tr>
-          <tr><td class="note" data-t="read.i4">オフセット量</td><td class="kj">ふちの太さ　3mm</td><td class="hg">ふちの ふとさ　3ミリ</td></tr>
-          <tr><td class="note" data-t="read.i5">ノードを編集する</td><td class="kj">点をうごかす</td><td class="hg">てんを うごかす</td></tr>
-          <tr><td class="note" data-t="read.i6">レイヤー</td><td class="kj">かさね</td><td class="hg">かさね</td></tr>
-          <tr><td class="note" data-t="read.i7">エクスポート</td><td class="kj">かきだす</td><td class="hg">ほぞんする</td></tr>
-          <tr><td class="note" data-t="read.i8">最小幅エラー</td><td class="kj">ここが細すぎます。折れやすいので、ふちの太さを増やしてください</td><td class="hg">ここが ほそすぎます。おれちゃうので ふちを ふとく してね</td></tr>
+          <tr><td>絵の実効解像度</td><td class="lvl">300dpi 未満</td><td class="wrn">注意</td></tr>
+          <tr><td>穴の大きさ</td><td class="lvl">φ2mm 未満</td><td class="err">エラー</td></tr>
+          <tr><td>穴が切る線からはみ出している</td><td class="lvl">—</td><td class="err">エラー</td></tr>
+          <tr><td>穴のふちから切る線のふちまで</td><td class="lvl">ふちからの距離 未満</td><td class="err">エラー</td></tr>
+          <tr><td>穴どうしの間隔／重なり</td><td class="lvl">ふちからの距離 未満</td><td class="err">エラー</td></tr>
+          <tr><td>切る線の幅（「切る線」パネル）</td><td class="lvl">1.5mm 未満</td><td>太らせたら <span class="wrn">注意</span>、残れば <span class="err">エラー</span></td></tr>
+          <tr><td>切る線の内側の穴（「切る線」パネル）</td><td class="lvl">φ2mm 未満</td><td class="err">エラー</td></tr>
         </tbody>
       </table>
     </div>
 
-    <div class="twopane">
-      <div class="pane change">
-        <h4><span class="mk">±</span><span data-t="read.ch">変わるもの</span></h4>
-        <ul>
-          <li data-t="read.ch1"><b>文言</b> — 言いかえた別のことばに差しかわる</li>
-          <li data-t="read.ch2"><b>書体</b> — 丸ゴシックになる。教科書に近い字のかたち</li>
-          <li data-t="read.ch3"><b>文字の大きさ</b> — 1.15 倍になる</li>
-          <li data-t="read.ch4"><b>行のあいだ</b> — 広がって読みやすくなる</li>
-          <li data-t="read.ch5"><b>単位</b> — 「3mm」が「3ミリ」になる</li>
-        </ul>
-      </div>
-      <div class="pane same">
-        <h4><span class="mk">=</span><span data-t="read.sa">変わらないもの</span></h4>
-        <ul>
-          <li data-t="read.sa1"><b>ボタンの位置</b> — どこに何があるかは同じ</li>
-          <li data-t="read.sa2"><b>できること</b> — 機能をへらしません</li>
-          <li data-t="read.sa3"><b>作ったデータ</b> — 出てくる SVG と PDF は同じ</li>
-          <li data-t="read.sa4"><b>となりの人と話せる</b> — 画面が同じなので、教える人と見ている画面がずれない</li>
-        </ul>
-      </div>
-    </div>
-
-    <h3 data-t="read.h2">ふりがなではなく、言いかえにした理由</h3>
-    <p class="body" data-t="read.why1">「背景」に「はいけい」とふりがなを振っても、意味は分かりません。読めることと分かることは別です。だから<b>人が言いかえを書き下ろします</b>。機械での自動変換はしません。</p>
-    <p class="body" data-t="read.why2">ふりがなモードも作りません。ルビは行のあいだを大きく崩すので、レイアウトが 2 段階で変わることになります。読めないなら、ふりがなを足すより<b>ことばごと変えた方が確実</b>です。</p>
-
-    <h3 data-t="read.h3">ひらがなを書くときの決まり</h3>
-    <ol class="steps">
-      <li><span><b data-t="read.r1b">分かち書きにする。</b><span data-t="read.r1">教科書に合わせて、ことばのくぎりでスペースを空けます。「きるせんを つくる」</span></span></li>
-      <li><span><b data-t="read.r2b">1 文を 20 文字までにする。</b><span data-t="read.r2">長い文は読むのをやめてしまいます。</span></span></li>
-      <li><span><b data-t="read.r3b">カタカナは意味が伝わるものだけ。</b><span data-t="read.r3">「アクリル」「データ」は残します。「オフセット」「レイヤー」は使いません。</span></span></li>
-      <li><span><b data-t="read.r4b">単位はカタカナで書く。</b><span data-t="read.r4">「3mm」ではなく「3ミリ」。</span></span></li>
-      <li><span><b data-t="read.r5b">打ち消しの言い方をさける。</b><span data-t="read.r5">「保存されていません」ではなく「まだ ほぞんして いません」。</span></span></li>
-    </ol>
-
-    <p class="body" data-t="read.last">切りかえは画面の右上にいつも置いてあり、設定の奥にはしまいません。1 回おすだけで変わり、次に開いたときも覚えています。書体は Windows の UD デジタル教科書体などを使いますが、Mac と Linux には入っていないので<b>ソフトにいっしょに入れて配ります</b>。どのパソコンでも同じ読みやすさになるようにするためです。</p>
-  </div>
-</section>
-
-<!-- ================= COMPARE ================= -->
-<section id="why">
-  <div class="wrap">
-    <p class="eyebrow">これまでとの ちがい</p>
-    <h2 data-t="cmp.h">Inkscape でやっていたことを、みんなが使えるかたちに。</h2>
-    <p class="lede" data-t="cmp.lede">今は Inkscape を使っています。とても強いソフトですが、この作業をするには手数が多く、<b>言葉もむずかしい</b>。小さい子には渡しにくい道具です。</p>
-    <div class="compare">
-      <div class="cmp now">
-        <h3 data-t="cmp.a.h">Inkscape でつくるとき</h3>
-        <div class="chain">
-          <div><span class="n">1</span><span data-t="cmp.a.1">画像を読みこむ</span></div>
-          <div><span class="n">2</span><span data-t="cmp.a.2">背景を消す（べつのソフトがいる）</span></div>
-          <div><span class="n">3</span><span data-t="cmp.a.3">「ビットマップのトレース」でパスにする</span></div>
-          <div><span class="n">4</span><span data-t="cmp.a.4">「アウトセット」を何回かおして太らせる</span></div>
-          <div><span class="n">5</span><span data-t="cmp.a.5">ノードを編集してかたちを直す</span></div>
-          <div><span class="n">6</span><span data-t="cmp.a.6">穴と台座を自分で描く（大きさを調べる）</span></div>
-          <div><span class="n">7</span><span data-t="cmp.a.7">SVG で保存、PDF で書き出し（べつべつに設定）</span></div>
-        </div>
-        <p class="foot" data-t="cmp.a.f">専門の言葉が多い ／ 長さの単位がややこしい ／ 大きさは自分で調べる</p>
-      </div>
-      <div class="cmp next">
-        <h3 data-t="cmp.b.h">kakomu でつくるとき</h3>
-        <div class="chain">
-          <div><span class="n">1</span><span data-t="cmp.b.1">絵を入れる</span></div>
-          <div><span class="n">2</span><span data-t="cmp.b.2">「うしろを けす」をおす</span></div>
-          <div><span class="n">3</span><span data-t="cmp.b.3">「かこむ」をおす（3 ミリ）</span></div>
-          <div><span class="n">4</span><span data-t="cmp.b.4">点をうごかして整える</span></div>
-          <div><span class="n">5</span><span data-t="cmp.b.5">穴や台座をえらぶ（大きさは入っている）</span></div>
-          <div><span class="n">6</span><span data-t="cmp.b.6">「かきだす」をおす（2 つ同時）</span></div>
-          <div><span class="n">&nbsp;</span><span>&nbsp;</span></div>
-        </div>
-        <p class="foot" data-t="cmp.b.f">ひらがなでも使える ／ 長さはぜんぶミリ ／ 大きさは入っている</p>
-      </div>
-    </div>
-    <div class="respect">
-      <p data-t="cmp.respect">Inkscape はとても強力なソフトです。kakomu はその代わりではなく、そこにある作りかたのうち<b>この 1 つだけ</b>を取り出して、小学生から先生までが使えるように作り直したものです。</p>
+    <h3>操作</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>操作</th><th>動き</th></tr></thead>
+        <tbody>
+          <tr><td>ホイール</td><td>表示を上下左右に動かす</td></tr>
+          <tr><td>Ctrl / ⌘ + ホイール</td><td>拡大・縮小</td></tr>
+          <tr><td>中ボタンでドラッグ、Space + ドラッグ</td><td>表示を動かす</td></tr>
+          <tr><td>Ctrl / ⌘ + Z ／ Ctrl / ⌘ + Shift + Z</td><td>元に戻す ／ やり直す（ドラッグ 1 回で 1 回分）</td></tr>
+          <tr><td>Delete / Backspace</td><td>選んだものを消す（「点」の道具では選んだ点）</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
@@ -494,55 +499,68 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
 <!-- ================= OUTPUT ================= -->
 <section id="output">
   <div class="wrap">
-    <p class="eyebrow">できるデータ</p>
-    <h2 data-t="out.h">切る機械と、印刷する機械に、そのまま渡せる。</h2>
-    <p class="lede" data-t="out.lede">どこかに送るのではなく、<b>同じ部屋にある機械に持っていきます</b>。書き出したあとに、どっちをどの機械に渡すかも画面に出ます。</p>
+    <p class="eyebrow">書き出し</p>
+    <h2>2 つのファイルを、同じフォルダに同時に書き出します。</h2>
+    <p class="lede">ファイル名は最初に読み込んだ画像の名前から付けます。書き出したあと、どちらをどの機械に渡すかを画面に表示します。</p>
     <div class="exports">
       <div class="ex ex-cut">
         <div class="ex-top">
           <div class="fmt">SVG</div>
-          <div class="what" data-t="out.a.w">きる データ</div>
-          <div class="to" data-t="out.a.t">→ レーザー加工機へ</div>
+          <div class="what"><code>&lt;名前&gt;_切る.svg</code></div>
+          <div class="to">→ レーザー加工機 xTool P3（XCS）</div>
         </div>
         <ul>
-          <li data-t="out.a.1">長さはぜんぶミリ。開くソフトが変わっても大きさが変わりません</li>
-          <li data-t="out.a.2">線はカットライン用の細さと色（マゼンタ）</li>
-          <li data-t="out.a.3">穴や台座のスリットも同じデータに入ります</li>
+          <li>切る線と穴。大きさは板と同じ 80 × 120mm、1 単位 = 1mm</li>
+          <li>線は <code>#FF00FF</code>、線幅 0.1mm、<code>fill="none"</code></li>
+          <li>三次ベジェだけで書き、変形は座標に反映済み</li>
+          <li>切る線も穴も無いときは、板の外形（角 R3mm の角丸長方形）を代わりに書き出します</li>
         </ul>
       </div>
       <div class="ex ex-print">
         <div class="ex-top">
           <div class="fmt">PDF</div>
-          <div class="what" data-t="out.b.w">いんさつする データ</div>
-          <div class="to" data-t="out.b.t">→ UV プリンターへ</div>
+          <div class="what"><code>&lt;名前&gt;_印刷.pdf</code></div>
+          <div class="to">→ UV プリンター Roland BD-8（VersaWorks 7）</div>
         </div>
         <ul>
-          <li data-t="out.b.1">原寸のまま、600dpi のこまかさ</li>
-          <li data-t="out.b.2">うしろを消した透明なところは、透明のまま残ります</li>
-          <li data-t="out.b.3">ふちの余白（3 ミリ）も入っています</li>
+          <li>ページは板に塗り足し 3mm を加えた 86 × 126mm。TrimBox が板の範囲</li>
+          <li>背景を消した絵はその結果を使い、透明な部分は SMask で残します</li>
+          <li>600dpi を超える画像は 600dpi に落として埋め込みます</li>
+          <li>白版は作りません（VersaWorks 側で作ります）</li>
         </ul>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ================= CHECK ================= -->
-<section id="check">
+<!-- ================= STATUS ================= -->
+<section id="status">
   <div class="wrap">
-    <p class="eyebrow">きれるか しらべる</p>
-    <h2 data-t="chk.h">切れない形は、切る前に教えます。</h2>
-    <p class="lede" data-t="chk.lede">細すぎるところは折れます。小さすぎる穴は開きません。失敗したアクリル板はもどってこないので、<b>切る前に気づけること</b>を大事にしています。だめな理由と、どう直すかを必ずいっしょに出します。</p>
-    <div class="tw">
-      <table>
-        <thead>
-          <tr><th data-t="chk.th1">しらべること</th><th data-t="chk.th2">きじゅん</th><th data-t="chk.th3">出るメッセージ（ひらがな）</th></tr>
-        </thead>
-        <tbody>
-          <tr><td data-t="chk.r1">細さ</td><td class="lvl">1.5ミリ</td><td class="hg">ここが ほそすぎます。おれちゃうので ふちを ふとく してね</td></tr>
-          <tr><td data-t="chk.r2">穴の大きさ</td><td class="lvl">2ミリ</td><td class="hg">この あなは ちいさすぎて きかいが はいりません</td></tr>
-          <tr><td data-t="chk.r3">絵のこまかさ</td><td class="lvl">300dpi</td><td class="hg">えが あらく なります。もっと おおきい えを つかってね</td></tr>
-        </tbody>
-      </table>
+    <p class="eyebrow">現状</p>
+    <h2>v0.2.1 でできること、まだできないこと。</h2>
+    <div class="twopane">
+      <div class="pane yes">
+        <h3><span class="mk">✓</span>できること</h3>
+        <ul>
+          <li>絵の読み込みと配置（移動・拡縮・回転・数値入力）</li>
+          <li>背景を消す（写真／イラスト）</li>
+          <li>切る線の自動生成と、点ごとの修正</li>
+          <li>キーホルダーの穴（自動配置・クリックで配置・複数）</li>
+          <li>SVG と PDF の同時書き出し</li>
+          <li>かんじ／ひらがなの切り替え</li>
+        </ul>
+      </div>
+      <div class="pane no">
+        <h3><span class="mk">×</span>まだできないこと</h3>
+        <ul>
+          <li>作業の保存と読み込み（アプリを閉じると作業内容は残りません）</li>
+          <li>アクリルスタンドの台座</li>
+          <li>線を描く・点を足す</li>
+          <li>板の大きさの変更（80 × 120mm で固定）</li>
+          <li>レイヤーのロック</li>
+          <li>コード署名（初回起動時に OS の警告が出ます）</li>
+        </ul>
+      </div>
     </div>
   </div>
 </section>
@@ -551,68 +569,43 @@ footer a:hover{color:var(--cut); border-bottom-color:var(--cut)}
 <section id="install">
   <div class="wrap">
     <p class="eyebrow">入れかた</p>
-    <h2 data-t="install.h">Windows でも Mac でも Linux でも動きます。</h2>
-    <p class="lede" data-t="install.lede"><b><a href="https://github.com/tukumanalab/kakomu/releases" style="color:var(--cut)">Releases からダウンロードできます</a></b>。omarchy（Arch + Hyprland）も主要な対応対象です。v0.1.0 はプレリリースで、切る線の自動生成はまだ入っていません。</p>
+    <h2>Releases からダウンロードします。</h2>
+    <p class="lede"><b><a href="https://github.com/tukumanalab/kakomu/releases" style="color:var(--cut)">github.com/tukumanalab/kakomu/releases</a></b>。コード署名をしていないので、どの OS でも初回起動時に警告が出ます。</p>
 
     <div class="plats">
       <div class="plat">
-        <h3 data-t="install.win.t">Windows</h3>
-        <p data-t="install.win.d">.msi を実行します。「WindowsによってPCが保護されました」と出たら、「詳細情報」→「実行」を選んでください。</p>
+        <h3>Windows</h3>
+        <p class="file">.msi ／ -setup.exe</p>
+        <p>実行して入れます。「WindowsによってPCが保護されました」と出たら、「詳細情報」→「実行」を選びます。</p>
       </div>
       <div class="plat">
-        <h3 data-t="install.mac.t">macOS</h3>
-        <p data-t="install.mac.d">.dmg を開いてアプリケーションに入れます。初回は「開発元を確認できないため開けません」と出るので、アプリを右クリックして「開く」を選んでください。2 回目からはそのまま開けます。</p>
+        <h3>macOS</h3>
+        <p class="file">_universal.dmg（Intel / Apple Silicon）</p>
+        <p>開いてアプリケーションに入れます。初回は「開発元を確認できないため開けません」と出るので、アプリを右クリックして「開く」を選びます。2 回目からはそのまま開けます。</p>
       </div>
       <div class="plat">
-        <h3 data-t="install.linux.t">Linux（一般）</h3>
-        <p data-t="install.linux.d">AppImage に実行の許可を付けて起動します。</p>
+        <h3>Linux</h3>
+        <p class="file">.AppImage ／ .deb ／ .rpm</p>
+        <p>AppImage は実行の許可を付けて起動します。</p>
         <code class="code">chmod +x kakomu_*.AppImage
 ./kakomu_*.AppImage</code>
       </div>
-      <div class="plat main">
-        <h3 data-t="install.arch.t">omarchy / Arch Linux</h3>
-        <p data-t="install.arch.d">AUR パッケージを使うのがいちばん簡単です。<b>依存が一緒に入る</b>ので、ファイルダイアログが出ないといった落とし穴を踏みません。</p>
-        <code class="code">yay -S kakomu-bin</code>
-        <p style="margin-top:12px" data-t="install.arch.d2">AUR への登録はまだです。それまでは、リポジトリから直接ビルドできます。やることは同じで、依存も一緒に入ります。</p>
+      <div class="plat">
+        <h3>Arch Linux / Omarchy</h3>
+        <p>AUR には未登録なので、<code>yay -S</code> では入りません。リポジトリの PKGBUILD から入れると、依存パッケージも一緒に入ります。</p>
         <code class="code">git clone https://github.com/tukumanalab/kakomu.git
 cd kakomu/packaging/aur/kakomu-bin
 makepkg -si</code>
+        <p style="margin-top:12px">ソースからビルドする場合は <code>packaging/aur/kakomu</code> で同じように <code>makepkg -si</code> します。</p>
       </div>
     </div>
 
     <div class="warnbox" style="margin-bottom:14px">
-      <p data-t="install.portal">AppImage を手で入れる場合は、依存を自分で揃えてください。とくに<b>ファイルを開くダイアログ</b>は <code>xdg-desktop-portal</code> と <code>xdg-desktop-portal-gtk</code> が要ります（ダイアログの実体を持っているのが <code>-gtk</code> です）。入れ忘れると「絵を入れる」を押しても何も起きません。Hyprland では <code>xdg-desktop-portal-hyprland</code> も入れておきます。</p>
+      <p>AppImage を手で入れる場合は、<code>webkit2gtk-4.1</code> <code>gtk3</code> <code>librsvg</code> <code>fuse2</code> と、ファイルを選ぶダイアログ用の <code>xdg-desktop-portal</code> <code>xdg-desktop-portal-gtk</code> が要ります。<code>-gtk</code> が無いと「絵を入れる」を押しても何も出ません。Hyprland では <code>xdg-desktop-portal-hyprland</code> も入れます。</p>
     </div>
 
     <div class="warnbox">
-      <p data-t="install.dmabuf">omarchy で<b>画面が真っ白になったり描画が崩れたりするとき</b>は、WebKitGTK の DMABUF レンダラを切ってください。Nvidia のドライバや一部のコンポジタで起きます。<br><code>WEBKIT_DISABLE_DMABUF_RENDERER=1 ./kakomu_*.AppImage</code></p>
-    </div>
-
-    <p class="body" style="margin-top:22px" data-t="install.sign">どの OS でも初回に警告が出ます。まだコード署名を入れていないためで、動作に問題はありません。AUR のパッケージ（kakomu-bin）も用意する予定です。</p>
-  </div>
-</section>
-
-<!-- ================= ROADMAP ================= -->
-<section id="roadmap">
-  <div class="wrap">
-    <p class="eyebrow">いまの じょうきょう</p>
-    <h2 data-t="rd.h">まだ使えません。設計しているところです。</h2>
-    <p class="lede" data-t="rd.lede">今あるのは、設計の文書とこのページだけです。下の予定は 1 人でずっと作りつづけた場合の目安で、それぞれの区切りに<b>「ここまでで動くもの」</b>を決めてあります。</p>
-    <div class="gantt">
-      <div class="gantt-inner">
-        <div class="gscale">
-          <span></span>
-          <i style="grid-column:2/8">1しゅうめ</i><i style="grid-column:8/14">7しゅうめ</i><i style="grid-column:14/19">13 — 17しゅうめ</i>
-        </div>
-        <div class="grow"><div class="glab"><b>M0</b><span data-t="rd.0">きほん</span></div><div class="gbar acc" style="grid-column:2/4">2しゅう — 3つのOSで動く</div></div>
-        <div class="grow"><div class="glab"><b>M1</b><span data-t="rd.1">かきだし</span></div><div class="gbar" style="grid-column:4/6">2しゅう — 実機に一度通す</div></div>
-        <div class="grow"><div class="glab"><b>M2</b><span data-t="rd.2">せんの へんしゅう</span></div><div class="gbar acc" style="grid-column:6/9">3しゅう — 手で囲めば作れる</div></div>
-        <div class="grow"><div class="glab"><b>M3</b><span data-t="rd.3">うしろを けす</span></div><div class="gbar" style="grid-column:9/11">2しゅう — 1回おせば消える</div></div>
-        <div class="grow"><div class="glab"><b>M4</b><span data-t="rd.4">かこむ</span></div><div class="gbar acc" style="grid-column:11/14">3しゅう — 通しで作れる</div></div>
-        <div class="grow"><div class="glab"><b>M5</b><span data-t="rd.5">よみやすさ・ぶひん</span></div><div class="gbar acc" style="grid-column:14/17">3しゅう — 実際に試す</div></div>
-        <div class="grow"><div class="glab"><b>M6</b><span data-t="rd.6">くばる</span></div><div class="gbar" style="grid-column:17/19">2しゅう — PCに入る</div></div>
-        <div class="gnote" data-t="rd.note">ぜんぶで 17 しゅう。M5 では、実際に小学生に通しで作ってもらい、つまったところをそのまま直すところまでを含みます。</div>
-      </div>
+      <p>画面が真っ白になる、描画が崩れるときは、WebKitGTK の DMABUF レンダラを切ります。<br><code>WEBKIT_DISABLE_DMABUF_RENDERER=1 ./kakomu_*.AppImage</code></p>
     </div>
   </div>
 </section>
@@ -621,7 +614,7 @@ makepkg -si</code>
   <div class="wrap">
     <div class="ctas">
       <a class="btn" href="https://github.com/tukumanalab/kakomu">GitHub</a>
-      <a class="btn ghost" href="https://github.com/tukumanalab/kakomu/blob/main/SPEC.md">SPEC.md</a>
+      <a class="btn ghost" href="https://github.com/tukumanalab/kakomu#readme">README</a>
     </div>
     <div class="lics">
       <span>MIT License</span>
@@ -631,146 +624,6 @@ makepkg -si</code>
     </div>
   </div>
 </footer>
-
-<script>
-// よみかたの切りかえ。HTML は「かんじ」で書かれているので JS を切っても読める。
-// ひらがなは自動変換ではなく、ここに書き下ろしたものに差しかえる。
-const H = {
-  "badge.wip":"まだ つくって いる とちゅうです",
-  "hero.kanji":"かこむ",
-  "hero.kanji2":"えを かこむ せんを つくる。",
-  "hero.tagline":"すきな えを アクリルの キーホルダーに する。",
-  "hero.sub":"えを いれて、うしろを けして、まわりを かこむ せんを つくります。あとは レーザーかこうきと UVプリンターに わたすだけ。",
-
-  "how.h":"はじめてでも その ひの うちに 1こ できる。",
-  "how.lede":"<b>1かいで 1こ つくりおわる こと</b>を めざして います。とちゅうで ほかの ソフトに うつりません。",
-  "fig.1":"えを いれる", "fig.2":"うしろを けす", "fig.3":"かこむ",
-  "st.1b":"えを いれる。", "st.1":"しゃしんでも えでも がめんに ドラッグ するだけ。",
-  "st.2b":"うしろを けす。", "st.2":"ボタンを 1かい おすと うしろが きえます。インターネットには おくりません。",
-  "st.3b":"かこむ。", "st.3":"えの 3ミリ そとがわに きる せんが できます。",
-  "st.4b":"かたちを なおす。", "st.4":"せんの うえの てんを ひっぱって ほそい ところを ふとく します。",
-  "st.5b":"ぶひんを つける。", "st.5":"キーホルダーなら あな、たてるなら たてる ぶひん。おおきさは きまって います。",
-  "st.6b":"ほぞん する。", "st.6":"きる データと いんさつする データが いっしょに でて きます。",
-
-  "read.h":"おなじ がめんの まま もじだけ かわる。",
-  "read.lede":"つかう ひとは しょうがっこう 1ねんせいから せんせいまで います。だから <b>こども ようの がめんを べつに つくりません</b>。がめんの つくりは そのままで <b>かんじ</b>と <b>ひらがな</b>を きりかえます。この ページの みぎうえで ためして みてね。",
-  "read.h1":"きりかえると こう かわります",
-  "read.th0":"ボタンや メッセージ", "read.th1":"かんじ", "read.th2":"ひらがな",
-  "read.i1":"えを よみこむ", "read.i2":"うしろを とうめいに する", "read.i3":"きる せんを つくる",
-  "read.i4":"ふちの ふとさ", "read.i5":"てんを うごかす", "read.i6":"かさね",
-  "read.i7":"ほぞんする", "read.i8":"ほそすぎる ときの メッセージ",
-  "read.ch":"かわる もの",
-  "read.ch1":"<b>ことば</b> — いいかえた べつの ことばに かわる",
-  "read.ch2":"<b>もじの かたち</b> — まるい かたちに なる。きょうかしょに ちかい",
-  "read.ch3":"<b>もじの おおきさ</b> — 1.15ばいに なる",
-  "read.ch4":"<b>ぎょうの あいだ</b> — ひろがって よみやすく なる",
-  "read.ch5":"<b>たんい</b> — 「3mm」が「3ミリ」に なる",
-  "read.sa":"かわらない もの",
-  "read.sa1":"<b>ボタンの ばしょ</b> — どこに なにが あるかは おなじ",
-  "read.sa2":"<b>できる こと</b> — きのうは へりません",
-  "read.sa3":"<b>つくった データ</b> — でて くる SVG と PDF は おなじ",
-  "read.sa4":"<b>となりの ひとと はなせる</b> — がめんが おなじなので おしえる ひとと ずれない",
-  "read.h2":"ふりがなでは なく いいかえに した わけ",
-  "read.why1":"「はいけい」と ふりがなを つけても いみは わかりません。よめる ことと わかる ことは べつです。だから <b>ひとが いいかえを かきます</b>。きかいで じどうへんかん は しません。",
-  "read.why2":"ふりがな モードも つくりません。ふりがなは ぎょうの あいだを おおきく くずすので、みため が 2かい かわる ことに なります。よめない なら ふりがなを たすより <b>ことばごと かえた ほうが かくじつ</b>です。",
-  "read.h3":"ひらがなを かく ときの きまり",
-  "read.r1b":"わかちがきに する。", "read.r1":"きょうかしょに あわせて ことばの くぎりで スペースを あけます。「きるせんを つくる」",
-  "read.r2b":"1つの ぶんは 20もじまで。", "read.r2":"ながい ぶんは よむのを やめて しまいます。",
-  "read.r3b":"カタカナは いみが つたわる ものだけ。", "read.r3":"「アクリル」「データ」は のこします。「オフセット」「レイヤー」は つかいません。",
-  "read.r4b":"たんいは カタカナで かく。", "read.r4":"「3mm」では なく「3ミリ」。",
-  "read.r5b":"うちけしの いいかたを さける。", "read.r5":"「ほぞんされて いません」では なく「まだ ほぞんして いません」。",
-  "read.last":"きりかえは がめんの みぎうえに いつも あります。せっていの おくには しまいません。1かい おすだけで かわり、つぎに ひらいた ときも おぼえて います。もじの かたちは Windows の きょうかしょたい などを つかいますが Mac と Linux には はいって いないので <b>ソフトと いっしょに いれて くばります</b>。どの パソコンでも おなじ よみやすさに する ためです。",
-
-  "cmp.h":"Inkscape で やって いた ことを みんなが つかえる ように。",
-  "cmp.lede":"いまは Inkscape を つかって います。とても つよい ソフトですが この さぎょうを するには てじゅんが おおくて <b>ことばも むずかしい</b>。ちいさい こには わたしにくい どうぐです。",
-  "cmp.a.h":"Inkscape で つくる とき",
-  "cmp.a.1":"えを よみこむ",
-  "cmp.a.2":"うしろを けす（べつの ソフトが いる）",
-  "cmp.a.3":"「ビットマップの トレース」を つかう",
-  "cmp.a.4":"「アウトセット」を なんかいも おす",
-  "cmp.a.5":"てんを うごかして かたちを なおす",
-  "cmp.a.6":"あなと だいざを じぶんで かく（おおきさを しらべる）",
-  "cmp.a.7":"SVG と PDF を べつべつに ほぞんする",
-  "cmp.a.f":"むずかしい ことばが おおい ／ ながさの たんいが ややこしい ／ おおきさは じぶんで しらべる",
-  "cmp.b.h":"kakomu で つくる とき",
-  "cmp.b.1":"えを いれる",
-  "cmp.b.2":"「うしろを けす」を おす",
-  "cmp.b.3":"「かこむ」を おす（3ミリ）",
-  "cmp.b.4":"てんを うごかして なおす",
-  "cmp.b.5":"あなや だいざを えらぶ（おおきさは はいって いる）",
-  "cmp.b.6":"「ほぞん」を おす（2つ いっしょ）",
-  "cmp.b.f":"ひらがなでも つかえる ／ ながさは ぜんぶ ミリ ／ おおきさは はいって いる",
-  "cmp.respect":"Inkscape は とても つよい ソフトです。kakomu は その かわりでは ありません。たくさん ある つくりかたの うち <b>この ひとつだけ</b>を とりだして ちいさい こでも つかえる ように なおした ものです。",
-
-  "out.h":"きる きかいと いんさつする きかいに そのまま わたせる。",
-  "out.lede":"どこかに おくるのでは なく <b>おなじ へやに ある きかいに もって いきます</b>。どっちを どの きかいに わたすかも がめんに でます。",
-  "out.a.w":"きる データ", "out.a.t":"→ レーザーかこうきへ",
-  "out.a.1":"ながさは ぜんぶ ミリ。ちがう ソフトで あけても おおきさは そのまま",
-  "out.a.2":"せんは きる ための ほそさと いろ（ピンク）",
-  "out.a.3":"あなや だいざの みぞも おなじ データに はいります",
-  "out.b.w":"いんさつする データ", "out.b.t":"→ UVプリンターへ",
-  "out.b.1":"じっさいの おおきさの まま こまかく",
-  "out.b.2":"けした ところは すきとおった まま のこります",
-  "out.b.3":"ふちの よゆう（3ミリ）も はいって います",
-
-  "chk.h":"きれない かたちは きる まえに おしえます。",
-  "chk.lede":"ほそすぎる ところは おれます。ちいさすぎる あなは あきません。しっぱいした アクリルは もどって こないので <b>きる まえに きづける こと</b>を だいじに して います。どうして だめかと どう なおすかを いっしょに おしえます。",
-  "chk.th1":"しらべる こと", "chk.th2":"きじゅん", "chk.th3":"でて くる ことば（ひらがな）",
-  "chk.r1":"ほそさ", "chk.r2":"あなの おおきさ", "chk.r3":"えの こまかさ",
-
-  "screen.h":"これが うごいて いる ところです。",
-  "screen.lede":"えを いれて うしろを けして まわりを かこんだ ところ。<b>ながさは ぜんぶ ミリ</b>で、ピクセルは どこにも でて きません。",
-  "screen.cap":"ひだりが どうぐ、まんなかが いた、みぎが せっていと かさねと しらべた けっか。したに「いたの おおきさ 80 × 120 ミリ」が でて います。",
-  "shot.matting":"うしろを けして いる ところ。いま なにを して いるかを かならず だします。だまって いると「こわれた」と おもって しまうからです。",
-  "shot.cutline":"できた きる せん。えの ふちから 3ミリ そとがわを まわって います。かどが まるいのは きょりで そとがわを はかって いるからです。",
-  "install.h":"Windows でも Mac でも Linux でも うごきます。",
-  "install.lede":"<b><a href=\"https://github.com/tukumanalab/kakomu/releases\" style=\"color:var(--cut)\">Releases から ダウンロード できます</a></b>。omarchy（Arch + Hyprland）も おもな たいしょうです。",
-  "install.win.t":"Windows",
-  "install.win.d":".msi を じっこう します。「WindowsによってPCが保護されました」と でたら「詳細情報」→「実行」を えらんでね。",
-  "install.mac.t":"macOS",
-  "install.mac.d":".dmg を ひらいて アプリケーションに いれます。1かいめは 「ひらけません」と でるので アプリを みぎクリック して「ひらく」を えらんでね。2かいめからは そのまま ひらけます。",
-  "install.linux.t":"Linux（ふつうの）",
-  "install.linux.d":"AppImage に じっこうの きょかを つけて うごかします。",
-  "install.arch.t":"omarchy / Arch Linux",
-  "install.arch.d":"AUR の パッケージを つかうのが いちばん かんたんです。<b>ひつような ものが いっしょに はいる</b>ので うまく うごかない ことが へります。",
-  "install.arch.d2":"AUR への とうろくは まだです。それまでは リポジトリから ちょくせつ ビルド できます。やる ことは おなじで ひつような ものも いっしょに はいります。",
-  "install.portal":"AppImage を てで いれる ばあいは ひつような ものを じぶんで そろえてね。とくに <b>ファイルを ひらく ダイアログ</b>には <code>xdg-desktop-portal</code> と <code>xdg-desktop-portal-gtk</code> が いります。いれ わすれると「えを いれる」を おしても なにも おきません。",
-  "install.dmabuf":"omarchy で <b>がめんが まっしろに なったり くずれたり する とき</b>は WebKitGTK の DMABUF レンダラを きってね。Nvidia の ドライバや いちぶの かんきょうで おきます。<br><code>WEBKIT_DISABLE_DMABUF_RENDERER=1 ./kakomu_*.AppImage</code>",
-  "install.sign":"どの OS でも 1かいめに ちゅういが でます。まだ しょめいを いれて いない ためで うごきには もんだい ありません。AUR の パッケージ（kakomu-bin）も よてい して います。",
-  "rd.h":"まだ つかえません。いま かんがえて いる ところです。",
-  "rd.lede":"いま あるのは かんがえを かいた ぶんしょうと この ページだけです。したの よていは 1にんで ずっと つくった ばあいの めやすです。",
-  "rd.0":"きほん", "rd.1":"ほぞん", "rd.2":"せんを なおす", "rd.3":"うしろを けす",
-  "rd.4":"かこむ", "rd.5":"よみやすさ・ぶひん", "rd.6":"くばる",
-  "rd.note":"ぜんぶで 17しゅう。M5 では ほんとうに しょうがくせいに つくって もらって つまった ところを なおします。",
-};
-
-(function () {
-  const root = document.documentElement;
-  const nodes = Array.from(document.querySelectorAll('[data-t]'));
-  const kanji = new Map();
-  nodes.forEach(el => kanji.set(el, el.innerHTML));
-
-  function apply(mode) {
-    nodes.forEach(el => {
-      const h = H[el.dataset.t];
-      el.innerHTML = (mode === 'hira' && h) ? h : kanji.get(el);
-    });
-    root.dataset.read = mode;
-    document.querySelectorAll('[data-read-btn]').forEach(b => {
-      b.setAttribute('aria-pressed', String(b.dataset.readBtn === mode));
-    });
-    try { localStorage.setItem('kakomu.read', mode); } catch (e) { /* 保存できなくても動く */ }
-  }
-
-  document.querySelectorAll('[data-read-btn]').forEach(b => {
-    b.addEventListener('click', () => apply(b.dataset.readBtn));
-  });
-
-  let saved = 'kanji';
-  try { saved = localStorage.getItem('kakomu.read') || 'kanji'; } catch (e) { /* 読めなくても動く */ }
-  if (saved === 'hira') apply('hira'); else root.dataset.read = 'kanji';
-})();
-</script>
 
 </body>
 </html>
