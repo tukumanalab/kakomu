@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - 'slides/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -25,9 +26,31 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: slides/pnpm-lock.yaml
+      # playwright-chromium は PDF 書き出し用。ビルドには要らないのでブラウザは落とさない
+      - run: pnpm install --frozen-lockfile
+        working-directory: slides
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - name: スライドのビルド
+        run: pnpm exec slidev build --base /kakomu/slides/
+        working-directory: slides
+      # サイトは docs、スライドは /slides/ に置く
+      - name: まとめる
+        run: |
+          mkdir _site
+          cp -r docs/. _site/
+          cp -r slides/dist _site/slides
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4

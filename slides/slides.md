@@ -6,6 +6,10 @@ colorSchema: dark
 aspectRatio: 16/9
 transition: fade
 download: false
+# GitHub Pages は下の階層の 404.html を使わないので、/slides/3 を開き直すと 404 になる
+routerMode: hash
+# 先読みは ./omarchy.jpg のような元の名前を取りにいくが、ビルド後はハッシュ付きの名前なので 404 になる
+preloadImages: false
 fonts:
   sans: BIZ UDPGothic
   mono: JetBrains Mono
