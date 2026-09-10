@@ -1,0 +1,451 @@
+:root {
+  --bg: #14151b;
+  --panel: #1c1e27;
+  --line: #2e3140;
+  --fg: #e4e5eb;
+  --muted: #8d91a5;
+  /* アプリの切る線と同じマゼンタ */
+  --cut: #d946ef;
+  --front: #5ec4d6;
+  --rust: #f0a35e;
+}
+
+.slidev-layout {
+  background: var(--bg);
+  color: var(--fg);
+  font-feature-settings: 'palt';
+}
+
+.slidev-layout h1 {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.slidev-layout code {
+  font-size: 0.9em;
+  padding: 0.05em 0.35em;
+  border-radius: 4px;
+  background: #262937;
+  color: var(--fg);
+}
+
+.slidev-layout i {
+  font-style: normal;
+  color: var(--muted);
+  margin-inline: 0.4em;
+}
+
+/* ---------------------------------------------------------------- 1. タイトル */
+
+.title-slide {
+  text-align: center;
+}
+
+/* 絵を囲む切る線と、キーホルダーの穴 */
+.keychain {
+  position: relative;
+  display: inline-block;
+  padding: 3.4rem 3.6rem 2.4rem;
+}
+
+.keychain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 3px solid var(--cut);
+  border-radius: 56px 80px 48px 88px / 72px 52px 84px 56px;
+}
+
+.keychain::after {
+  content: '';
+  position: absolute;
+  top: 1.1rem;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  margin-left: -11px;
+  border: 3px solid var(--cut);
+  border-radius: 50%;
+}
+
+.title-slide .eyebrow {
+  margin: 0 0 0.6rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.2em;
+  color: var(--cut);
+}
+
+.title-slide h1 {
+  margin: 0;
+  font-size: 2.1rem;
+  line-height: 1.5;
+}
+
+.title-slide .byline {
+  margin-top: 2.6rem;
+  font-size: 1.2rem;
+}
+
+.title-slide .byline span {
+  margin-left: 0.8em;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- 2. 自己紹介 */
+
+.profile {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 2.4rem;
+  align-items: center;
+  margin-top: 1.4rem;
+}
+
+.who {
+  text-align: center;
+}
+
+.avatar {
+  width: 9rem;
+  height: 9rem;
+  margin: 0 auto;
+  border-radius: 50%;
+  outline: 3px solid var(--cut);
+  outline-offset: 8px;
+}
+
+.who .name {
+  margin: 1.4rem 0 0.3rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.who .handles {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.9;
+  color: var(--muted);
+}
+
+/* テーマの ul / li の指定より強くする */
+.slidev-layout .facts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slidev-layout .facts li {
+  margin: 0;
+  list-style: none;
+  padding: 0.7rem 0 0.7rem 1rem;
+  border-left: 3px solid var(--line);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.slidev-layout .facts li + li {
+  margin-top: 0.35rem;
+}
+
+.facts .sub {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.bridge-line {
+  margin-top: 1.8rem;
+  text-align: center;
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+.bridge-line strong {
+  color: var(--cut);
+}
+
+/* ---------------------------------------------------------------- 3. マシン */
+
+.machine {
+  display: flex;
+  justify-content: center;
+  margin: 1.8rem 0 0;
+}
+
+/* 縦長の写真を 4:3 に切り出して、PC を大きく見せる */
+.machine img {
+  height: 22rem;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 12px;
+  outline: 3px solid var(--cut);
+  outline-offset: 8px;
+}
+
+/* ---------------------------------------------------------------- 4. アーキテクチャ */
+
+/* テーマの h1 + p（寄せて薄くする）を打ち消す */
+.slidev-layout.arch-slide .lede {
+  margin: 0.4rem 0 1.4rem;
+  opacity: 1;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.arch {
+  display: grid;
+  grid-template-columns: 1.1fr 8rem 1.5fr;
+  gap: 0.6rem;
+  align-items: stretch;
+}
+
+.box {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+  border-radius: 8px;
+  background: var(--panel);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.box.front { --accent: var(--front); }
+.box.core { --accent: var(--rust); }
+
+.box header {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.box .tag {
+  margin-right: 0.5em;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+}
+
+.box ul {
+  margin: 0;
+  padding-left: 1.1em;
+}
+
+.box li + li {
+  margin-top: 0.3rem;
+}
+
+.box dl {
+  display: grid;
+  grid-template-columns: 3.8rem 1fr;
+  gap: 0.45rem 0.6rem;
+  margin: 0;
+}
+
+.box dt {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--rust);
+}
+
+.box dd {
+  margin: 0;
+}
+
+.pipeline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 0.3rem;
+}
+
+.pipeline span {
+  padding: 0 0.45em;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.pipeline i {
+  margin-inline: 0.15em;
+}
+
+.bridge {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.bridge p {
+  margin: 0;
+}
+
+.bridge-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.wire {
+  margin-top: 0.5rem !important;
+  padding-bottom: 0.15rem;
+  border-bottom: 2px solid var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.wire span {
+  margin-inline: 0.3em;
+  color: var(--muted);
+}
+
+.bridge-note {
+  margin-top: 0.9rem !important;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.outputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.6rem;
+  margin-top: 1.4rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.85rem;
+}
+
+.outputs p {
+  margin: 0;
+}
+
+.outputs code {
+  color: var(--cut);
+}
+
+.outputs .dist {
+  flex-basis: 100%;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- 5. AUR */
+
+.slidev-layout.aur-slide .lede {
+  margin: 0.4rem 0 0;
+  opacity: 1;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.screenshot {
+  display: flex;
+  justify-content: center;
+  margin: 1.6rem 0 0;
+}
+
+/* 下の空白を落として、アドレスバーとお知らせだけを見せる */
+.screenshot img {
+  height: 20rem;
+  aspect-ratio: 1788 / 1120;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 12px;
+  outline: 3px solid var(--cut);
+  outline-offset: 8px;
+}
+
+/* ---------------------------------------------------------------- 6. デモ */
+
+.demo-slide {
+  text-align: center;
+}
+
+.demo-slide .keychain {
+  padding: 3.4rem 5.4rem 2.6rem;
+}
+
+.slidev-layout.demo-slide h1 {
+  margin: 0;
+  font-size: 3.6rem;
+}
+
+/* ---------------------------------------------------------------- 7–8. 動画 */
+
+/* 左に説明、右に縦長の動画 */
+.slidev-layout.media-slide {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr auto 1fr;
+  column-gap: 3rem;
+}
+
+.slidev-layout.media-slide h1 {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+  margin: 0 0 0.6rem;
+}
+
+/* テーマの h1 + p（寄せて薄くする）を打ち消す */
+.slidev-layout.media-slide .model {
+  grid-column: 1;
+  grid-row: 2;
+  margin: 0;
+  opacity: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.2rem;
+  color: var(--cut);
+}
+
+.slidev-layout.media-slide .what {
+  grid-column: 1;
+  grid-row: 3;
+  align-self: start;
+  margin: 1.2rem 0 0;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+.clip {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-self: center;
+  height: 27rem;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  border-radius: 12px;
+  outline: 3px solid var(--cut);
+  outline-offset: 8px;
+}
+
+/* ---------------------------------------------------------------- 9. おわり */
+
+/* タイトルと同じ枠を使い、終わりだとわかるようにする */
+.slidev-layout.end-slide h1 {
+  font-size: 2.6rem;
+}
+
+.end-slide .links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.4rem;
+  margin-top: 2rem;
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+.end-slide .links p {
+  margin: 0;
+}
+
+/* 暗い背景のままだと読めないカメラがあるので、白地に黒で出す */
+.end-slide .qr {
+  width: 6.5rem;
+  height: 6.5rem;
+  padding: 0.35rem;
+  border-radius: 6px;
+  background: #fff;
+}
