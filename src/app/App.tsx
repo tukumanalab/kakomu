@@ -21,10 +21,9 @@ import {
   deleteNode,
   editSubpaths,
   importImage as importImageCommand,
-  updateHole,
 } from '~/document/commands';
 import { deleteAnchor } from '~/geometry/edit';
-import { buildHole, buildHoleAt, findHole, newHoleNode } from '~/document/parts';
+import { buildHole, buildHoleAt, findHoles, newHoleNode } from '~/document/parts';
 import type { Anchor, Asset, ImageNode, PathNode, Point } from '~/document/types';
 import { ASSUMED_DPI, pxToMm } from '~/document/types';
 import { generateCutline, importImage, pickImageFile, removeBackground } from '~/ipc';
@@ -70,7 +69,7 @@ export default function App() {
   const everythingCutOut = () => hasArtwork() && imageNodes().every((n) => n.matting);
   const hasCutline = () =>
     doc().layers.some((l) => l.role === 'cutline' && l.nodes.length > 0);
-  const hasHole = () => findHole(doc()) !== null;
+  const hasHole = () => findHoles(doc()).length > 0;
 
   onMount(() => {
     initI18n();
@@ -325,6 +324,7 @@ export default function App() {
    *
    * 置き場所は切る線の内側から自動で選ぶ。上から吊るすものなので、
    * 条件を満たすうちのいちばん上に置く（SPEC 7.6）。
+   * すでにある穴は避けるので、押すたびに次の場所に増えていく。
    */
   function onMakeHole() {
     setError(null);
@@ -334,32 +334,16 @@ export default function App() {
       return;
     }
     const node = newHoleNode(shape, t('hole.title'));
-    run(addHole(node, findHole(doc())?.node.id ?? null));
+    run(addHole(node, null));
     selectOnly(node.id);
   }
 
-  /**
-   * 「穴」の道具で押した場所に置く。寄せずにそのまま置く。
-   * すでに穴があれば、それを動かす（いまは穴を 1 つだけ持つ）。
-   */
+  /** 「穴」の道具で押した場所に、新しい穴を置く。寄せずにそのまま置く */
   function onPlaceHole(p: Point) {
     setError(null);
-    const shape = buildHoleAt(holePart(), p);
-    const existing = findHole(doc());
-    if (existing) {
-      run(
-        updateHole(
-          existing.node.id,
-          { transform: existing.node.transform, subpaths: existing.node.subpaths, part: existing.part },
-          { transform: shape.transform, subpaths: shape.subpaths, part: shape.part },
-        ),
-      );
-      selectOnly(existing.node.id);
-    } else {
-      const node = newHoleNode(shape, t('hole.title'));
-      run(addHole(node, null));
-      selectOnly(node.id);
-    }
+    const node = newHoleNode(buildHoleAt(holePart(), p), t('hole.title'));
+    run(addHole(node, null));
+    selectOnly(node.id);
   }
 
   /** すでに切る線があれば、作り直しで置き換える */

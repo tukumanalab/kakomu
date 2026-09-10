@@ -140,8 +140,8 @@ export default function Canvas(props: {
     // 穴の枠の四隅。どの道具でもつかめる
     const holeHandle = target.closest('[data-hole-corner]');
     if (holeHandle && selId) {
-      const h = findHole(d());
-      if (h && h.node.id === selId) {
+      const h = findHole(d(), selId);
+      if (h) {
         const corner = Number(holeHandle.getAttribute('data-hole-corner')) as Corner;
         const c = holeCenter(h.node);
         const r = h.part.diameterMm / 2;
@@ -160,13 +160,13 @@ export default function Canvas(props: {
       }
     }
 
-    // 「穴」の道具: 穴そのものをつかんだら動かし、それ以外は押した場所に置く
+    // 「穴」の道具: 穴そのものをつかんだら動かし、それ以外は押した場所に新しく置く
     if (tool() === 'hole') {
       const hit = target.closest('[data-node]')?.getAttribute('data-node') ?? null;
-      const existing = findHole(d());
-      if (hit && existing && hit === existing.node.id) {
-        selectOnly(hit);
-        setDrag({ kind: 'move', id: hit, start: mmPoint(e), before: existing.node.transform });
+      const existing = hit ? findHole(d(), hit) : null;
+      if (existing) {
+        selectOnly(existing.node.id);
+        setDrag({ kind: 'move', id: existing.node.id, start: mmPoint(e), before: existing.node.transform });
         return;
       }
       props.onPlaceHole(mmPoint(e));
@@ -426,9 +426,7 @@ export default function Canvas(props: {
 
   const selectedHole = createMemo<FoundHole | null>(() => {
     const id = selection()[0];
-    if (!id) return null;
-    const h = findHole(d());
-    return h && h.node.id === id ? h : null;
+    return id ? findHole(d(), id) : null;
   });
 
   const selectedPath = createMemo<PathNode | null>(() => {

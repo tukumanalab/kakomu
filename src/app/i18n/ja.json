@@ -118,7 +118,7 @@
   "hole.diameter": "穴の大きさ",
   "hole.margin": "ふちからの距離",
   "hole.place": "自動で置き直す",
-  "hole.placed": "切る線の内側で、いちばん上に置きました。ドラッグで動かせます",
+  "hole.placed": "切る線の内側で、いちばん上に置きました。ドラッグで動かせ、四隅で大きさを変えられます",
   "hole.needCutline": "先に「囲む」を押して、切る線を作ってください",
   "hole.none": "まだ穴をあけていません",
   "action.makeHole": "穴をあける",
@@ -137,5 +137,8 @@
   "node.selectPath": "線を押して選んでください",
   "cutline.overwriteYes": "作り直す",
   "cutline.overwriteNo": "やめる",
-  "hole.toolHint": "置きたいところを押してください。ふちに近すぎればチェックに出ます"
+  "hole.toolHint": "置きたいところを押してください。ふちに近すぎればチェックに出ます",
+  "hole.selectOne": "穴を押して選ぶと、その穴の大きさを変えられます。上の値は次に置く穴に使います",
+  "issue.holesTooClose": "穴どうしが近すぎます（{d}ミリ）。ここは折れやすいので、離してください",
+  "issue.holesOverlap": "穴どうしが重なっています。離してください"
 }

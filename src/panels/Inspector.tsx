@@ -7,7 +7,7 @@ import {
   selection,
 } from '~/document/store';
 import { setImageBox, toggleLayerVisible, toggleLayerLocked, updateHole } from '~/document/commands';
-import { buildHole, findHole, holeCenter, holeMargin, resizeHoleInPlace } from '~/document/parts';
+import { buildHole, findHole, findHoles, holeCenter, holeMargins, resizeHoleInPlace } from '~/document/parts';
 import type { FoundHole } from '~/document/parts';
 import {
   compareOriginal,
@@ -62,9 +62,7 @@ function PropertiesPanel() {
   /** 選んでいるのが穴なら、そちらを出す */
   const hole = createMemo<FoundHole | null>(() => {
     const id = selection()[0];
-    if (!id) return null;
-    const found = findHole(doc());
-    return found && found.node.id === id ? found : null;
+    return id ? findHole(doc(), id) : null;
   });
 
   function commitHole(next: { x?: number; y?: number; d?: number }) {
@@ -295,23 +293,30 @@ export function collectIssues(): Issue[] {
     }
   }
 
-  // 穴は手でも動かせるので、いまの位置で測り直す（SPEC 7.6）
-  const hole = findHole(d);
-  if (hole) {
+  // 穴は手でも動かせるので、いまの位置で測り直す（SPEC 7.6）。
+  // 穴どうしの距離も、ほかの穴を避けるものに含めて同じ物差しで見る
+  for (const hole of findHoles(d)) {
     if (hole.part.diameterMm < MIN_HOLE_DIAMETER_MM) {
       issues.push({
         level: 'error',
         text: t('issue.holeTooSmall', { d: hole.part.diameterMm.toFixed(1) }),
       });
     }
-    const margin = holeMargin(d, hole.node, hole.part);
-    if (margin !== null) {
-      if (margin < 0) {
-        issues.push({ level: 'error', text: t('issue.holeOutside') });
-      } else if (margin < hole.part.marginMm) {
+    const m = holeMargins(d, hole.node, hole.part);
+    if (!m) continue;
+    if (m.cutline < 0) {
+      issues.push({ level: 'error', text: t('issue.holeOutside') });
+    } else if (m.all < hole.part.marginMm) {
+      // 切る線より、ほかの穴のほうが近いなら、そちらの話として出す
+      const otherHole = m.all < m.cutline - 1e-9;
+      if (otherHole && m.all < 0) {
+        issues.push({ level: 'error', text: t('issue.holesOverlap') });
+      } else if (otherHole) {
+        issues.push({ level: 'error', text: t('issue.holesTooClose', { d: m.all.toFixed(1) }) });
+      } else {
         issues.push({
           level: 'error',
-          text: t('issue.holeTooCloseToEdge', { d: margin.toFixed(1) }),
+          text: t('issue.holeTooCloseToEdge', { d: m.all.toFixed(1) }),
         });
       }
     }
@@ -546,12 +551,17 @@ function CutlinePanel() {
 /**
  * キーホルダーの穴。
  *
+ * 穴を選んでいればその穴を、選んでいなければ次に置く穴の値を扱う。
  * 値を変えたらその場で作り直す（SPEC 7.6）。位置は動かさない。
  * 置いた場所と違うところに現れると「ずれた」としか見えないため。
  * 条件を満たさなくなれば、チェックがその場で出す。
  */
 function HolePanel() {
-  const hole = createMemo(() => findHole(doc()));
+  const hole = createMemo(() => {
+    const id = selection()[0];
+    return id ? findHole(doc(), id) : null;
+  });
+  const anyHole = createMemo(() => findHoles(doc()).length > 0);
 
   function change(patch: Partial<HolePart>) {
     const next: HolePart = { ...holePart(), ...patch };
@@ -573,7 +583,7 @@ function HolePanel() {
   function replace() {
     const found = hole();
     if (!found) return;
-    const shape = buildHole(doc(), holePart());
+    const shape = buildHole(doc(), found.part, null, found.node.id);
     if (!shape.ok) return;
     run(
       updateHole(
@@ -626,7 +636,7 @@ function HolePanel() {
         when={hole()}
         fallback={
           <p class="empty-note" style={{ 'margin-top': '10px', 'font-size': '11px' }}>
-            {t('hole.none')}
+            {anyHole() ? t('hole.selectOne') : t('hole.none')}
           </p>
         }
       >

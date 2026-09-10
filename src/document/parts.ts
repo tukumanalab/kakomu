@@ -5,10 +5,10 @@
  * ここはそれをドキュメントのノードに変換するところを受け持つ。
  */
 
-import { circleSubPath, clearance, cutlinePolygons, placeHole } from '~/geometry/hole';
+import { circleSubPath, clearance, cutlinePolygons, flattenSubpaths, placeHole } from '~/geometry/hole';
 import * as M from '~/geometry/matrix';
 import { uid } from './store';
-import type { Doc, HolePart, Matrix, PathNode, Point, SubPath } from './types';
+import type { Doc, HolePart, Matrix, NodeId, PathNode, Point, SubPath } from './types';
 import { DEFAULT_HOLE_PART } from './types';
 
 export interface FoundHole {
@@ -16,19 +16,43 @@ export interface FoundHole {
   part: HolePart;
 }
 
-/** 部品のレイヤーにある穴。いまは 1 つだけ持てる */
-export function findHole(d: Doc): FoundHole | null {
+/** 部品のレイヤーにある穴、ぜんぶ */
+export function findHoles(d: Doc): FoundHole[] {
+  const out: FoundHole[] = [];
   for (const layer of d.layers) {
     if (layer.role !== 'parts') continue;
     for (const node of layer.nodes) {
       if (node.type !== 'path') continue;
       const origin = node.origin;
       if (origin?.type === 'part' && origin.part.kind === 'hole') {
-        return { node, part: origin.part };
+        out.push({ node, part: origin.part });
       }
     }
   }
-  return null;
+  return out;
+}
+
+/** id の穴。id を省くと最初の穴 */
+export function findHole(d: Doc, id?: NodeId | null): FoundHole | null {
+  const holes = findHoles(d);
+  if (id === undefined) return holes[0] ?? null;
+  return holes.find((h) => h.node.id === id) ?? null;
+}
+
+/**
+ * 穴を置くときに避けるもの。切る線に、ほかの穴を足したもの。
+ *
+ * 穴の円をそのまま折れ線に加えると、交差数の偶奇でその中は「外」になり、
+ * 距離もその円のふちまでで測られる。つまり穴どうしも
+ * 「ふちからの距離」ぶん離れることになる。板は穴と穴のあいだでも折れる。
+ */
+function obstacles(d: Doc, except?: NodeId): Point[][] {
+  const polys = cutlinePolygons(d);
+  for (const h of findHoles(d)) {
+    if (h.node.id === except) continue;
+    polys.push(...flattenSubpaths(h.node.subpaths, h.node.transform));
+  }
+  return polys;
 }
 
 /** 穴の中心（mm）。位置は transform が持っている */
@@ -36,14 +60,26 @@ export function holeCenter(node: PathNode): Point {
   return M.apply(node.transform, { x: 0, y: 0 });
 }
 
+export interface HoleMargins {
+  /** 切る線のふちまで */
+  cutline: number;
+  /** ほかの穴も含めた、いちばん近いものまで */
+  all: number;
+}
+
 /**
- * いまの穴が、切る線のふちからどれだけ離れているか（mm）。
- * 負なら食い込んでいる。切る線がまだ無いときは null。
+ * 切る線までと、ほかの穴も含めた距離を分けて返す。
+ * どちらが近いかで、出す文言が変わる（はみ出し／穴どうしが近い）。
  */
-export function holeMargin(d: Doc, node: PathNode, part: HolePart): number | null {
-  const polys = cutlinePolygons(d);
-  if (polys.length === 0) return null;
-  return clearance(holeCenter(node), polys) - part.diameterMm / 2;
+export function holeMargins(d: Doc, node: PathNode, part: HolePart): HoleMargins | null {
+  const cut = cutlinePolygons(d);
+  if (cut.length === 0) return null;
+  const c = holeCenter(node);
+  const r = part.diameterMm / 2;
+  return {
+    cutline: clearance(c, cut) - r,
+    all: clearance(c, obstacles(d, node.id)) - r,
+  };
 }
 
 export type HoleShape =
@@ -56,9 +92,14 @@ export type HoleShape =
  * keepCenter を渡すと、そこが条件を満たしているあいだは動かさない。
  * 大きさを少し変えただけで、手で置き直した穴が飛んでいっては困るため。
  */
-export function buildHole(d: Doc, part: HolePart, keepCenter?: Point | null): HoleShape {
-  const polys = cutlinePolygons(d);
-  if (polys.length === 0) return { ok: false, bestMarginMm: -Infinity };
+export function buildHole(
+  d: Doc,
+  part: HolePart,
+  keepCenter?: Point | null,
+  except?: NodeId,
+): HoleShape {
+  if (cutlinePolygons(d).length === 0) return { ok: false, bestMarginMm: -Infinity };
+  const polys = obstacles(d, except);
 
   const subpaths = [circleSubPath(part.diameterMm / 2)];
 
