@@ -272,6 +272,9 @@ export default function App() {
       run(addCutline(path, existingCutlineId()));
       setCutlineIssues(r.issues);
       setCutlineSegments(r.segmentCount);
+      // できた線の点をすぐ見せる。点をつかんで直せることは、
+      // 点が見えていないと伝わらない（SPEC 7.4）
+      changeTool('node');
     } catch (e) {
       setError(`${t('err.cutlineFailed')}（${message(e)}）`);
     } finally {
