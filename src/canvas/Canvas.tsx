@@ -9,9 +9,12 @@ import { subpathsToPathData } from '~/geometry/path';
 import { moveAnchor, moveHandle } from '~/geometry/edit';
 import type { AnchorRef } from '~/geometry/edit';
 import { displayAssetId, doc, findNode, isSelected, run, selectOnly, selection } from '~/document/store';
-import { compareOriginal, holePart, selectedAnchor, setSelectedAnchor, tool } from '~/app/session';
+import { compareOriginal, holePart, selectedAnchor, setHolePart, setSelectedAnchor, tool } from '~/app/session';
 import { findHole } from '~/document/parts';
-import { editSubpaths, setImageBox, setTransform } from '~/document/commands';
+import { editSubpaths, setImageBox, setTransform, updateHole } from '~/document/commands';
+import { holeCenter, resizeHoleInPlace } from '~/document/parts';
+import type { FoundHole } from '~/document/parts';
+import type { HolePart } from '~/document/types';
 import * as M from '~/geometry/matrix';
 import { fitCanvas, panBy, screenToMm, setSize, toMm, viewBox, zoomAt } from './viewport';
 
@@ -42,6 +45,16 @@ type Drag =
       ref: AnchorRef;
       which: 'in' | 'out';
       before: { subpaths: SubPath[]; manuallyEdited: boolean };
+    }
+  | {
+      kind: 'hole-resize';
+      id: string;
+      /** つまんだ角の反対の角。ここを固定して広げる（Inkscape と同じ） */
+      fixed: Point;
+      /** 固定した角から見て、つまんだ角がどちらにあるか（±1） */
+      sx: 1 | -1;
+      sy: 1 | -1;
+      before: { transform: M.Matrix; subpaths: SubPath[]; part: HolePart };
     };
 
 export default function Canvas(props: {
@@ -123,6 +136,29 @@ export default function Canvas(props: {
 
     const target = e.target as Element;
     const selId = selection()[0];
+
+    // 穴の枠の四隅。どの道具でもつかめる
+    const holeHandle = target.closest('[data-hole-corner]');
+    if (holeHandle && selId) {
+      const h = findHole(d());
+      if (h && h.node.id === selId) {
+        const corner = Number(holeHandle.getAttribute('data-hole-corner')) as Corner;
+        const c = holeCenter(h.node);
+        const r = h.part.diameterMm / 2;
+        // 0=左上 1=右上 2=右下 3=左下。反対の角を固定する
+        const sx: 1 | -1 = corner === 1 || corner === 2 ? 1 : -1;
+        const sy: 1 | -1 = corner === 2 || corner === 3 ? 1 : -1;
+        setDrag({
+          kind: 'hole-resize',
+          id: selId,
+          fixed: { x: c.x - sx * r, y: c.y - sy * r },
+          sx,
+          sy,
+          before: { transform: h.node.transform, subpaths: h.node.subpaths, part: h.part },
+        });
+        return;
+      }
+    }
 
     // 「穴」の道具: 穴そのものをつかんだら動かし、それ以外は押した場所に置く
     if (tool() === 'hole') {
@@ -315,6 +351,30 @@ export default function Canvas(props: {
         return;
       }
 
+      case 'hole-resize': {
+        const found = findNode(d(), st.id);
+        if (!found || found.node.type !== 'path') return;
+        const p = mmPoint(e);
+        // 固定した角からカーソルまでの、長いほうを直径にする（円のまま）。
+        // 0.1mm 刻みで、細すぎる値は切る
+        const w = (p.x - st.fixed.x) * st.sx;
+        const h = (p.y - st.fixed.y) * st.sy;
+        const dia = Math.max(0.5, Math.round(Math.max(w, h) * 10) / 10);
+        const part: HolePart = { ...st.before.part, diameterMm: dia };
+        const shape = resizeHoleInPlace(found.node, part);
+        const center = { x: st.fixed.x + (st.sx * dia) / 2, y: st.fixed.y + (st.sy * dia) / 2 };
+        run(
+          updateHole(
+            st.id,
+            st.before,
+            { transform: M.compose(center.x, center.y, 0), subpaths: shape.subpaths, part },
+            `hole-r:${st.id}`,
+          ),
+        );
+        setHolePart(part);
+        return;
+      }
+
       case 'rotate': {
         const found = findNode(d(), st.id);
         if (!found || found.node.type !== 'image') return;
@@ -362,6 +422,13 @@ export default function Canvas(props: {
     if (!id) return null;
     const found = findNode(d(), id);
     return found && found.node.type === 'image' ? found.node : null;
+  });
+
+  const selectedHole = createMemo<FoundHole | null>(() => {
+    const id = selection()[0];
+    if (!id) return null;
+    const h = findHole(d());
+    return h && h.node.id === id ? h : null;
   });
 
   const selectedPath = createMemo<PathNode | null>(() => {
@@ -438,6 +505,11 @@ export default function Canvas(props: {
               hairline={hairline()}
             />
           )}
+        </Show>
+
+        {/* 選んでいる穴: 右のハンドルをつまんで大きさを変える */}
+        <Show when={selectedHole()}>
+          {(h) => <HoleFrame hole={h()} handleMm={handleMm()} hairline={hairline()} />}
         </Show>
 
         {/* 「穴」の道具: これから置く穴を、カーソルに薄く出す */}
@@ -527,6 +599,59 @@ function NodeView(props: { node: Node }) {
         })()}
       </Show>
     </Show>
+  );
+}
+
+// ------------------------------------------------------------------ 穴の枠
+
+/**
+ * 選んでいる穴。Inkscape と同じく、破線の枠と四隅のハンドルを出す。
+ * 角をつまむと、反対の角を固定したまま大きさが変わる。
+ */
+function HoleFrame(props: { hole: FoundHole; handleMm: number; hairline: number }) {
+  const c = () => holeCenter(props.hole.node);
+  const r = () => props.hole.part.diameterMm / 2;
+  const half = () => props.handleMm / 2;
+  const corners = () => {
+    const { x, y } = c();
+    const rr = r();
+    return [
+      { x: x - rr, y: y - rr },
+      { x: x + rr, y: y - rr },
+      { x: x + rr, y: y + rr },
+      { x: x - rr, y: y + rr },
+    ];
+  };
+  return (
+    <g>
+      <rect
+        x={c().x - r()}
+        y={c().y - r()}
+        width={r() * 2}
+        height={r() * 2}
+        fill="none"
+        stroke="var(--cut)"
+        stroke-width={props.hairline}
+        stroke-dasharray={`${props.hairline * 3} ${props.hairline * 2}`}
+        pointer-events="none"
+      />
+      <For each={corners()}>
+        {(p, i) => (
+          <rect
+            data-hole-corner={String(i())}
+            x={p.x - half()}
+            y={p.y - half()}
+            width={props.handleMm}
+            height={props.handleMm}
+            fill="var(--surface)"
+            stroke="var(--cut)"
+            stroke-width={props.hairline * 1.5}
+            pointer-events="all"
+            style={{ cursor: i() % 2 === 0 ? 'nwse-resize' : 'nesw-resize' }}
+          />
+        )}
+      </For>
+    </g>
   );
 }
 

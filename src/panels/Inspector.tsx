@@ -8,6 +8,7 @@ import {
 } from '~/document/store';
 import { setImageBox, toggleLayerVisible, toggleLayerLocked, updateHole } from '~/document/commands';
 import { buildHole, findHole, holeCenter, holeMargin, resizeHoleInPlace } from '~/document/parts';
+import type { FoundHole } from '~/document/parts';
 import {
   compareOriginal,
   cutlineIssues,
@@ -58,6 +59,37 @@ function PropertiesPanel() {
     return n ? M.decompose(n.transform) : null;
   });
 
+  /** 選んでいるのが穴なら、そちらを出す */
+  const hole = createMemo<FoundHole | null>(() => {
+    const id = selection()[0];
+    if (!id) return null;
+    const found = findHole(doc());
+    return found && found.node.id === id ? found : null;
+  });
+
+  function commitHole(next: { x?: number; y?: number; d?: number }) {
+    const h = hole();
+    if (!h) return;
+    const c = holeCenter(h.node);
+    const part: HolePart = {
+      ...h.part,
+      diameterMm: Math.max(0.5, next.d ?? h.part.diameterMm),
+    };
+    const shape = resizeHoleInPlace(h.node, part);
+    run(
+      updateHole(
+        h.node.id,
+        { transform: h.node.transform, subpaths: h.node.subpaths, part: h.part },
+        {
+          transform: M.compose(next.x ?? c.x, next.y ?? c.y, 0),
+          subpaths: shape.subpaths,
+          part,
+        },
+      ),
+    );
+    setHolePart(part);
+  }
+
   function commit(next: { x?: number; y?: number; w?: number; h?: number; deg?: number }) {
     const n = node();
     const p = pose();
@@ -81,9 +113,37 @@ function PropertiesPanel() {
   return (
     <div class="panel">
       <h3>{t('panel.properties')}</h3>
+      <Show when={hole()}>
+        {(h) => (
+          <div class="fields">
+            <NumField
+              label={t('prop.x')}
+              unit={t('unit.mm')}
+              value={holeCenter(h().node).x}
+              onCommit={(v) => commitHole({ x: v })}
+            />
+            <NumField
+              label={t('prop.y')}
+              unit={t('unit.mm')}
+              value={holeCenter(h().node).y}
+              onCommit={(v) => commitHole({ y: v })}
+            />
+            <NumField
+              label={t('hole.diameter')}
+              unit={t('unit.mm')}
+              value={h().part.diameterMm}
+              onCommit={(v) => commitHole({ d: v })}
+            />
+          </div>
+        )}
+      </Show>
       <Show
         when={node()}
-        fallback={<p class="empty-note">{t('prop.nothingSelected')}</p>}
+        fallback={
+          <Show when={!hole()}>
+            <p class="empty-note">{t('prop.nothingSelected')}</p>
+          </Show>
+        }
       >
         {(n) => (
           <>
@@ -486,9 +546,9 @@ function CutlinePanel() {
 /**
  * キーホルダーの穴。
  *
- * 値を変えたらその場で作り直す（SPEC 7.6）。すでに置いてある場所が
- * 条件を満たしているうちは動かさない。手で置き直した穴が、
- * 大きさを少し変えただけで飛んでいっては困るため。
+ * 値を変えたらその場で作り直す（SPEC 7.6）。位置は動かさない。
+ * 置いた場所と違うところに現れると「ずれた」としか見えないため。
+ * 条件を満たさなくなれば、チェックがその場で出す。
  */
 function HolePanel() {
   const hole = createMemo(() => findHole(doc()));
@@ -499,17 +559,11 @@ function HolePanel() {
 
     const found = hole();
     if (!found) return;
-    const before = {
-      transform: found.node.transform,
-      subpaths: found.node.subpaths,
-      part: found.part,
-    };
-    const shape = buildHole(doc(), next, holeCenter(found.node));
-    const after = shape.ok ? shape : resizeHoleInPlace(found.node, next);
+    const after = resizeHoleInPlace(found.node, next);
     run(
       updateHole(
         found.node.id,
-        before,
+        { transform: found.node.transform, subpaths: found.node.subpaths, part: found.part },
         { transform: after.transform, subpaths: after.subpaths, part: after.part },
         `hole:${found.node.id}`,
       ),
