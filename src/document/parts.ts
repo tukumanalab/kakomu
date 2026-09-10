@@ -5,7 +5,7 @@
  * ここはそれをドキュメントのノードに変換するところを受け持つ。
  */
 
-import { circleSubPath, clearance, cutlinePolygons, placeHole } from '~/geometry/hole';
+import { circleSubPath, clearance, cutlinePolygons, placeHole, placeHoleNear } from '~/geometry/hole';
 import * as M from '~/geometry/matrix';
 import { uid } from './store';
 import type { Doc, HolePart, Matrix, PathNode, Point, SubPath } from './types';
@@ -90,6 +90,21 @@ export function newHoleNode(shape: Extract<HoleShape, { ok: true }>, name: strin
     stroke: { color: '#FF00FF', widthMm: 0.1, opacity: 1 },
     origin: { type: 'part', part: shape.part },
   };
+}
+
+/**
+ * 押した場所に置く（「穴」の道具）。
+ * 切る線があればその内側に寄せる。まだ無ければ押した場所にそのまま置き、
+ * 切る線ができたあとにチェックで見る。
+ */
+export function buildHoleAt(d: Doc, part: HolePart, target: Point): HoleShape {
+  const subpaths = [circleSubPath(part.diameterMm / 2)];
+  const polys = cutlinePolygons(d);
+  if (polys.length === 0) return { ok: true, transform: translate(target), subpaths, part };
+
+  const placed = placeHoleNear(polys, { diameterMm: part.diameterMm, marginMm: part.marginMm }, target);
+  if (!placed.ok) return { ok: false, bestMarginMm: placed.bestMarginMm };
+  return { ok: true, transform: translate(placed.center), subpaths, part };
 }
 
 /**

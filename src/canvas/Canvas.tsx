@@ -9,7 +9,8 @@ import { subpathsToPathData } from '~/geometry/path';
 import { moveAnchor, moveHandle } from '~/geometry/edit';
 import type { AnchorRef } from '~/geometry/edit';
 import { displayAssetId, doc, findNode, isSelected, run, selectOnly, selection } from '~/document/store';
-import { compareOriginal, selectedAnchor, setSelectedAnchor, tool } from '~/app/session';
+import { compareOriginal, holePart, selectedAnchor, setSelectedAnchor, tool } from '~/app/session';
+import { findHole } from '~/document/parts';
 import { editSubpaths, setImageBox, setTransform } from '~/document/commands';
 import * as M from '~/geometry/matrix';
 import { fitCanvas, panBy, screenToMm, setSize, toMm, viewBox, zoomAt } from './viewport';
@@ -43,12 +44,18 @@ type Drag =
       before: { subpaths: SubPath[]; manuallyEdited: boolean };
     };
 
-export default function Canvas(props: { onRequestImport: () => void }) {
+export default function Canvas(props: {
+  onRequestImport: () => void;
+  /** 「穴」の道具で押した場所（mm）。置くのは App 側 */
+  onPlaceHole: (p: Point) => void;
+}) {
   let host!: HTMLDivElement;
   let svg!: SVGSVGElement;
 
   const [drag, setDrag] = createSignal<Drag>({ kind: 'none' });
   const [spaceHeld, setSpaceHeld] = createSignal(false);
+  /** 「穴」の道具のとき、カーソルの位置（mm）。ここに薄い円を出す */
+  const [hover, setHover] = createSignal<Point | null>(null);
 
   const d = doc;
 
@@ -116,6 +123,19 @@ export default function Canvas(props: { onRequestImport: () => void }) {
 
     const target = e.target as Element;
     const selId = selection()[0];
+
+    // 「穴」の道具: 穴そのものをつかんだら動かし、それ以外は押した場所に置く
+    if (tool() === 'hole') {
+      const hit = target.closest('[data-node]')?.getAttribute('data-node') ?? null;
+      const existing = findHole(d());
+      if (hit && existing && hit === existing.node.id) {
+        selectOnly(hit);
+        setDrag({ kind: 'move', id: hit, start: mmPoint(e), before: existing.node.transform });
+        return;
+      }
+      props.onPlaceHole(mmPoint(e));
+      return;
+    }
 
     // 「点」の道具では、点とハンドルをいちばん先に見る
     if (tool() === 'node' && selId) {
@@ -195,6 +215,7 @@ export default function Canvas(props: { onRequestImport: () => void }) {
     const st = drag();
     switch (st.kind) {
       case 'none':
+        if (tool() === 'hole') setHover(mmPoint(e));
         return;
 
       case 'pan': {
@@ -367,6 +388,7 @@ export default function Canvas(props: { onRequestImport: () => void }) {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
+        onPointerLeave={() => setHover(null)}
       >
         {/* 塗り足しの外側 */}
         <rect
@@ -414,6 +436,23 @@ export default function Canvas(props: { onRequestImport: () => void }) {
               node={n()}
               handleMm={handleMm()}
               hairline={hairline()}
+            />
+          )}
+        </Show>
+
+        {/* 「穴」の道具: これから置く穴を、カーソルに薄く出す */}
+        <Show when={tool() === 'hole' && drag().kind === 'none' && hover()}>
+          {(p) => (
+            <circle
+              cx={p().x}
+              cy={p().y}
+              r={holePart().diameterMm / 2}
+              fill="none"
+              stroke="var(--cut)"
+              stroke-width={hairline()}
+              stroke-dasharray={`${hairline() * 3} ${hairline() * 2}`}
+              opacity={0.6}
+              pointer-events="none"
             />
           )}
         </Show>

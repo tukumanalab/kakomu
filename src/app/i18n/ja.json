@@ -136,5 +136,6 @@
   "node.tooFew": "これ以上は点を消せません。3 つは要ります",
   "node.selectPath": "線を押して選んでください",
   "cutline.overwriteYes": "作り直す",
-  "cutline.overwriteNo": "やめる"
+  "cutline.overwriteNo": "やめる",
+  "hole.toolHint": "置きたいところを押してください。切る線の内側に寄せます"
 }

@@ -21,10 +21,11 @@ import {
   deleteNode,
   editSubpaths,
   importImage as importImageCommand,
+  updateHole,
 } from '~/document/commands';
 import { deleteAnchor } from '~/geometry/edit';
-import { buildHole, findHole, newHoleNode } from '~/document/parts';
-import type { Anchor, Asset, ImageNode, PathNode } from '~/document/types';
+import { buildHole, buildHoleAt, findHole, newHoleNode } from '~/document/parts';
+import type { Anchor, Asset, ImageNode, PathNode, Point } from '~/document/types';
 import { ASSUMED_DPI, pxToMm } from '~/document/types';
 import { generateCutline, importImage, pickImageFile, removeBackground } from '~/ipc';
 import type { MattingProgress } from '~/ipc';
@@ -337,6 +338,35 @@ export default function App() {
     selectOnly(node.id);
   }
 
+  /**
+   * 「穴」の道具で押した場所に置く。
+   * 切る線があればその内側に寄せる。すでに穴があれば、それを動かす
+   * （いまは穴を 1 つだけ持つ）。
+   */
+  function onPlaceHole(p: Point) {
+    setError(null);
+    const shape = buildHoleAt(doc(), holePart(), p);
+    if (!shape.ok) {
+      setError(t('err.holeNoRoom'));
+      return;
+    }
+    const existing = findHole(doc());
+    if (existing) {
+      run(
+        updateHole(
+          existing.node.id,
+          { transform: existing.node.transform, subpaths: existing.node.subpaths, part: existing.part },
+          { transform: shape.transform, subpaths: shape.subpaths, part: shape.part },
+        ),
+      );
+      selectOnly(existing.node.id);
+    } else {
+      const node = newHoleNode(shape, t('hole.title'));
+      run(addHole(node, null));
+      selectOnly(node.id);
+    }
+  }
+
   /** すでに切る線があれば、作り直しで置き換える */
   function existingCutline(): PathNode | null {
     const layer = doc().layers.find((l) => l.role === 'cutline');
@@ -373,7 +403,7 @@ export default function App() {
         canMakeHole={hasCutline()}
       />
       <ToolRail active={tool()} onChange={changeTool} />
-      <Canvas onRequestImport={() => void onImport()} />
+      <Canvas onRequestImport={() => void onImport()} onPlaceHole={onPlaceHole} />
       <Inspector />
       <StatusBar />
 
@@ -431,7 +461,9 @@ export default function App() {
         <div class="next-hint">
           {tool() === 'node'
             ? t('node.hint')
-            : !everythingCutOut()
+            : tool() === 'hole'
+              ? t('hole.toolHint')
+              : !everythingCutOut()
             ? t('next.removeBg')
             : !hasCutline()
               ? t('next.cutline')

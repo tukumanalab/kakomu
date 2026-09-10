@@ -6,12 +6,12 @@ import type { ToolId } from '~/app/session';
 
 export type { ToolId };
 
-/** 動くのは「選択」と「点」。他はまだ押せないことを見せる */
+/** 動くのは「選択」「点」「穴」。他はまだ押せないことを見せる */
 const TOOLS: { id: ToolId; glyph: string; ready: boolean }[] = [
   { id: 'select', glyph: '↖', ready: true },
   { id: 'node', glyph: '◆', ready: true },
   { id: 'path', glyph: '✎', ready: false },
-  { id: 'hole', glyph: '○', ready: false },
+  { id: 'hole', glyph: '○', ready: true },
   { id: 'stand', glyph: '⊥', ready: false },
 ];
 
